@@ -1,0 +1,46 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# SQLite database
+transactions.db
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# PyQt5 UI compilation cache
+*.ui.py
+
+# Python virtual environment
+venv/
+
+# PyInstaller
+dist/
+build/
+*.spec
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# pytest cache
+.cache/
+
+# mypy
+.mypy_cache/
+
+# Pyre type checker
+.pyre/
+
+# Others
+*.swp
+*.bak
+*.old
+
