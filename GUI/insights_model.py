@@ -4,7 +4,10 @@ from PyQt5.QtCore import QObject, pyqtSignal
 import io
 from datetime import datetime
 import requests
+from data_fetcher import fetch_price
+from model import TransactionModel
 from PIL import Image
+
 
 class InsightsModel(QObject):
     prices_updated = pyqtSignal(float, float, str)
@@ -20,20 +23,12 @@ class InsightsModel(QObject):
     
     def refresh_prices(self):
         try:
-            # Replace with your actual API endpoints for gold and BTC prices
-            gold_response = requests.get("https://api.example.com/gold/price")
-            btc_response = requests.get("https://api.example.com/btc/price")
-            
-            if gold_response.status_code == 200 and btc_response.status_code == 200:
-                self.gold_price = float(gold_response.json()["price"])
-                self.btc_price = float(btc_response.json()["price"])
-                self.last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            self.gold_price = fetch_price(TransactionModel.get_asset_info("XAUUSD"))
+            self.btc_price = fetch_price(TransactionModel.get_asset_info("BTCUSDT"))
+            self.last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 
-                self.prices_updated.emit(self.gold_price, self.btc_price, self.last_updated)
-                return True
-            else:
-                self.error_occurred.emit("Failed to fetch current prices")
-                return False
+            self.prices_updated.emit(self.gold_price, self.btc_price, self.last_updated)
+            return True
         except Exception as e:
             self.error_occurred.emit(f"Error refreshing prices: {str(e)}")
             return False
