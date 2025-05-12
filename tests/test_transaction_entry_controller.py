@@ -2,11 +2,11 @@ import pytest
 from unittest.mock import MagicMock, patch
 from controllers.transaction_entry_controller import TransactionEntryController
 
-@patch("controllers.transaction_entry_controller.Asset.get_all_symbols", return_value=["BTC"])
-@patch("controllers.transaction_entry_controller.Transaction")
-@patch("controllers.transaction_entry_controller.fetch_price", return_value=100.0)
 @patch("controllers.transaction_entry_controller.datetime")
-def test_handle_submit_success(mock_datetime, mock_fetch_price, mock_transaction, mock_get_all_symbols):
+@patch("controllers.transaction_entry_controller.fetch_price", return_value=100.0)
+@patch("controllers.transaction_entry_controller.Transaction")
+@patch("controllers.transaction_entry_controller.Asset.get_all_symbols", return_value=["BTC"])
+def test_handle_submit_success(mock_get_all_symbols, mock_transaction, mock_fetch_price, mock_datetime):
     mock_datetime.now.return_value.strftime.return_value = "2024-01-01 12:00:00"
 
     mock_view = MagicMock()
