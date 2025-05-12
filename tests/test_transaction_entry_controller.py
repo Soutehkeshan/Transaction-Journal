@@ -20,7 +20,8 @@ def test_handle_submit_success(mock_datetime, mock_fetch_price, mock_transaction
 
     controller = TransactionEntryController(mock_view)
     controller.handle_submit()
-
+    print(mock_view.status_label.setText.call_args)
+    
     mock_transaction.assert_called_once()
     mock_transaction.return_value.save.assert_called_once()
     mock_view.status_label.setText.assert_called_with("✅ Transaction added successfully!")
