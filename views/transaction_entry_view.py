@@ -14,7 +14,7 @@ class TransactionEntryView(QWidget):
 
         # --- Inputs ---
         self.symbol_input = QLineEdit()
-        self.symbol_input.setPlaceholderText("Asset Symbol (e.g., BTC)")
+        self.symbol_input.setPlaceholderText("Asset Symbol (e.g., BTCUSDT)")
 
         self.symbol_completer = QCompleter()
         self.symbol_model = QStringListModel()

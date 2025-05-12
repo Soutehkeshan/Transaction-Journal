@@ -1,7 +1,10 @@
-from PyQt5.QtCore import QObject
-from models.asset import Asset  # assuming your Asset class is in models/asset.py
+from PyQt5.QtCore import QObject, pyqtSignal
+from models.asset import Asset
+from controllers.transaction_entry_controller import TransactionEntryController
 
 class AssetEntryController(QObject):
+    assetAdded = pyqtSignal()
+
     def __init__(self, view):
         super().__init__()
         self.view = view
@@ -21,5 +24,6 @@ class AssetEntryController(QObject):
             asset.save()
             self.view.status_label.setText("✅ Asset added successfully.")
             self.view.clear_inputs()
+            self.assetAdded.emit()  # Emit signal to update other views
         except Exception as e:
             self.view.status_label.setText(f"❌ Error: {str(e)}")

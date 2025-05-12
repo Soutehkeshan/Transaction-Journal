@@ -23,6 +23,11 @@ class MainController(QObject):
         self.asset_entry_controller = AssetEntryController(
             self.main_view.get_asset_entry_view()
         )
+        
+        # Connect signals
+        self.asset_entry_controller.assetAdded.connect(
+            self.transaction_entry_page_controller.update_symbol_suggestions
+        )
 
     def show(self):
         self.main_view.show()

@@ -13,8 +13,13 @@ class TransactionEntryController:
         self.view.submit_button.clicked.connect(self.handle_submit)
 
     def handle_submit(self):
-        # try:
+        try:
             symbol = self.view.symbol_input.text().strip().upper()
+            existing_symbols = Asset.get_all_symbols()
+            if symbol not in existing_symbols:
+                self.view.status_label.setText("❌ Error: This asset does not exist. Please add it first.")
+                return
+
             tx_type = self.view.type_input.currentText()
             amount = float(self.view.amount_input.text())
             price = float(self.view.price_input.text())
@@ -36,8 +41,8 @@ class TransactionEntryController:
             transaction = Transaction(symbol, tx_type, amount, price, gold_price, btc_price, timestamp, note)
             transaction.save()
             self.view.status_label.setText("✅ Transaction added successfully!")
-        # except Exception as e:
-        #     self.view.status_label.setText(f"❌ Error: {str(e)}")
+        except Exception as e:
+            self.view.status_label.setText(f"❌ Error: {str(e)}")
 
     def update_symbol_suggestions(self):
         try:
