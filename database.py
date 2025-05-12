@@ -1,8 +1,16 @@
 # database.py
 import sqlite3
+import os
 
 def get_connection():
-    return sqlite3.connect("transactions.db")
+    # Ensure that the 'database' folder exists
+    os.makedirs('database', exist_ok=True)
+    
+    # Create the path to the database inside the 'database' folder
+    db_path = os.path.join('database', 'transactions.db')
+    
+    # Return the connection to the database
+    return sqlite3.connect(db_path)
 
 def init_db():
     conn = get_connection()
@@ -29,6 +37,9 @@ def init_db():
         btc_price REAL,
         timestamp TEXT,
         note TEXT,
+        gold_gain REAL,
+        btc_gain REAL,
+        gain REAL,
         FOREIGN KEY (asset_id) REFERENCES assets(id)
     )""")
 
