@@ -2,8 +2,8 @@ import yfinance as yf
 import pytse_client as tse
 
 def fetch_price(asset):
-    source = asset[2]  # Data source
-    symbol = asset[3]  # Asset symbol
+    source = asset.data_source
+    symbol = asset.source_symbol
 
     if source == 'yahoo_finance':
         return fetch_yahoo_finance_price(symbol)
