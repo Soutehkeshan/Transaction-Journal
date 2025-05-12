@@ -36,18 +36,28 @@ class Asset:
     
     @classmethod
     def get_gold_details(cls):
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM assets WHERE symbol = 'XAUUSD'")
-        rows = cursor.fetchall()
-        conn.close()
-        return rows[0] if rows else None
-    
+        return Asset(
+            symbol='XAUUSD',
+            data_source='yahoo_finance',
+            source_symbol='GC=F'
+        )
+
     @classmethod
     def get_btc_details(cls):
+        return Asset(
+            symbol='BTCUSDT',
+            data_source='yahoo_finance',
+            source_symbol='BTC-USD'
+        )
+
+    @classmethod
+    def get_by_symbol(cls, symbol):
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM assets WHERE symbol = 'BTCUSDT'")
-        rows = cursor.fetchall()
+        cursor.execute("SELECT * FROM assets WHERE symbol = ?", (symbol,))
+        row = cursor.fetchone()
         conn.close()
-        return rows[0] if rows else None
+
+        if row:
+            return cls(id=row[0], symbol=row[1], data_source=row[2], source_symbol=row[3])
+        return None
