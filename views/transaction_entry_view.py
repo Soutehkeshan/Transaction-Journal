@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import (
     QTextEdit, QCompleter, QDateTimeEdit, QCheckBox, QDoubleSpinBox
 )
 from PyQt5.QtCore import QStringListModel, QDateTime, pyqtSignal
+from typing import List
 
 
 class TransactionEntryView(QWidget):
@@ -108,7 +109,7 @@ class TransactionEntryView(QWidget):
             "btc_price": self.btc_price_input.value()
         }
 
-    def update_symbol_completer(self, symbols: list[str]):
+    def update_symbol_completer(self, symbols: List[str]):
         self.symbol_model.setStringList(symbols)
 
     def show_status(self, message: str):
