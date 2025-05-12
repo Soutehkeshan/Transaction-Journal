@@ -43,7 +43,7 @@ jobs:
         pyinstaller --onefile --windowed --name TransactionJournal app.py
         
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: TransactionJournal-Windows
         path: dist/TransactionJournal.exe
