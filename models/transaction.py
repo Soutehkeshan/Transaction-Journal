@@ -58,19 +58,16 @@ class Transaction:
         self.id = None
 
     def calculate_gains(self, latest_asset_price, latest_gold_price, latest_btc_price):
-        # Calculate the original and current value of the asset
-        original_value = self.amount * self.price_per_unit
-        current_value = self.amount * latest_asset_price
-        
-        # Calculate the overall gain in dollars
-        self.gain = current_value - original_value
-        
-        # Calculate gold gain: gain in dollars converted to gold based on the latest gold price
-        self.gold_gain = (self.gain * latest_gold_price / self.price_per_unit) if latest_gold_price else 0
-        
-        # Calculate BTC gain: gain in dollars converted to BTC based on the latest BTC price
-        self.btc_gain = (self.gain * latest_btc_price / self.price_per_unit) if latest_btc_price else 0
+        self.gain = latest_asset_price / self.price_per_unit
 
+        self.gold_gain = (
+            self.gain * (self.gold_price / latest_gold_price)
+            if latest_gold_price and self.gold_price else 0
+        )
+        self.btc_gain = (
+            self.gain * (self.btc_price / latest_btc_price)
+            if latest_btc_price and self.btc_price else 0
+        )
 
     @classmethod
     def get_by_id(cls, id):
