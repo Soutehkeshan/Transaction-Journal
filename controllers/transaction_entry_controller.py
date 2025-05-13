@@ -38,7 +38,7 @@ class TransactionEntryController:
                 timestamp = self.view.date_input.dateTime().toString("yyyy-MM-dd HH:mm:ss")
 
 
-            transaction = Transaction(symbol, tx_type, amount, price, gold_price, btc_price, timestamp, note)
+            transaction = Transaction(symbol, tx_type, amount, price, price*amount, gold_price, btc_price, timestamp, note)
             transaction.save()
             self.view.status_label.setText("✅ Transaction added successfully!")
         except Exception as e:
