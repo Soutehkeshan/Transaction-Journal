@@ -1,4 +1,5 @@
 PyQt5>=5.15.0           # Qt framework for Python GUI
+PyQtCharts>=5.15.0      # For creating charts in PyQt applications
 matplotlib>=3.5.0       # For generating graphs
 pandas>=1.3.0           # For data manipulation and analysis
 yfinance>=0.2.59        # For fetching financial data from Yahoo Finance
