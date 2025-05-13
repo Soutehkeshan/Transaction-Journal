@@ -8,19 +8,20 @@ class InsightsController(QObject):
         super().__init__()
         self.view = view
 
-        # Connect the gains calculation button
+        # Connect calculate button
         self.view.calculate_gains_btn.clicked.connect(self.calculate_gains)
 
-        # Connect sorting buttons
+        # Connect sort buttons
         self.view.most_asset_btn.clicked.connect(lambda: self.sort_and_display("gain", reverse=True))
         self.view.least_asset_btn.clicked.connect(lambda: self.sort_and_display("gain", reverse=False))
         self.view.most_btc_btn.clicked.connect(lambda: self.sort_and_display("btc_gain", reverse=True))
         self.view.least_btc_btn.clicked.connect(lambda: self.sort_and_display("btc_gain", reverse=False))
         self.view.most_gold_btn.clicked.connect(lambda: self.sort_and_display("gold_gain", reverse=True))
         self.view.least_gold_btn.clicked.connect(lambda: self.sort_and_display("gold_gain", reverse=False))
+        self.view.date_asc_btn.clicked.connect(lambda: self.sort_and_display("timestamp", reverse=False))
+        self.view.date_desc_btn.clicked.connect(lambda: self.sort_and_display("timestamp", reverse=True))
 
     def calculate_gains(self):
-        # Fetch latest prices
         gold = Asset.get_gold_details()
         btc = Asset.get_btc_details()
 
@@ -31,7 +32,6 @@ class InsightsController(QObject):
         latest_gold_price = fetch_price(gold)
         latest_btc_price = fetch_price(btc)
 
-        # Get all transactions
         for tx in Transaction.get_all():
             asset = Asset.get_by_symbol(tx.asset_id)
             if asset:
@@ -46,4 +46,3 @@ class InsightsController(QObject):
         transactions = [tx for tx in transactions if hasattr(tx, key)]
         sorted_tx = sorted(transactions, key=lambda t: getattr(t, key), reverse=reverse)
         self.view.update_table(sorted_tx)
-
