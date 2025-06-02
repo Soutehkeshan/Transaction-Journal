@@ -1,15 +1,18 @@
 from database.db_utils import get_db_connection
 
 class Transaction:
-    def __init__(self, asset_id, type, amount, price_per_unit, total,
-                gold_price, btc_price, timestamp, note="", id=None,
-                gold_gain=0, btc_gain=0, gain=0):
+    def __init__(self, asset_id, type, amount, price_per_unit, unit,
+                 dollar_price_per_unit, gold_price, btc_price, timestamp,
+                 note="", id=None, gold_gain=0, btc_gain=0, gain=0):
         self.id = id
         self.asset_id = asset_id
         self.type = type
         self.amount = amount
         self.price_per_unit = price_per_unit
-        self.total = total
+        self.unit = unit
+        self.dollar_price_per_unit = dollar_price_per_unit
+        self.total = self.amount * self.price_per_unit
+        self.dollar_total = self.amount * self.dollar_price_per_unit
         self.gold_price = gold_price
         self.btc_price = btc_price
         self.timestamp = timestamp
@@ -23,26 +26,28 @@ class Transaction:
         cursor = conn.cursor()
         if self.id is None:
             cursor.execute("""
-                INSERT INTO transactions (asset_id, type, amount, price_per_unit,
-                    total, gold_price, btc_price, timestamp, note, gold_gain, btc_gain, gain)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                self.asset_id, self.type, self.amount, self.price_per_unit, self.total,
-                self.gold_price, self.btc_price, self.timestamp, self.note, 0, 0, 0
-            ))
+                           INSERT INTO transactions (asset_id, type, amount, price_per_unit,
+                           unit, dollar_price_per_unit, total, dollar_total,
+                           gold_price, btc_price, timestamp, note, gold_gain, btc_gain, gain)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                           """, (
+                               self.asset_id, self.type, self.amount, self.price_per_unit, self.unit,
+                               self.dollar_price_per_unit, self.total, self.dollar_total,
+                               self.gold_price, self.btc_price, self.timestamp, self.note, 0, 0, 0
+                               ))
             self.id = cursor.lastrowid
         else:
             cursor.execute("""
-                UPDATE transactions
-                SET asset_id=?, type=?, amount=?, price_per_unit=?, total=?,
-                    gold_price=?, btc_price=?, timestamp=?, note=?,
-                    gold_gain=?, btc_gain=?, gain=?
-                WHERE id=?
-            """, (
-                self.asset_id, self.type, self.amount, self.price_per_unit,
-                self.total, self.gold_price, self.btc_price, self.timestamp, self.note,
-                self.gold_gain, self.btc_gain, self.gain, self.id
-            ))
+                           UPDATE transactions
+                           SET asset_id=?, type=?, amount=?, price_per_unit=?, unit=?,
+                           dollar_price_per_unit=?, total=?, dollar_total=?, gold_price=?,
+                           btc_price=?, timestamp=?, note=?, gold_gain=?, btc_gain=?, gain=?
+                           WHERE id=?
+                           """, (
+                               self.asset_id, self.type, self.amount, self.price_per_unit, self.unit,
+                               self.dollar_price_per_unit, self.total, self.dollar_total, self.gold_price,
+                               self.btc_price, self.timestamp, self.note, self.gold_gain, self.btc_gain, self.gain, self.id
+                               ))
 
         conn.commit()
         conn.close()
@@ -95,14 +100,15 @@ class Transaction:
             type=row[2],
             amount=row[3],
             price_per_unit=row[4],
-            total=row[5],
-            gold_price=row[6],
-            btc_price=row[7],
-            timestamp=row[8],
-            note=row[9],
-            gold_gain=row[10],
-            btc_gain=row[11],
-            gain=row[12]
+            unit=row[5],
+            dollar_price_per_unit=row[6],
+            gold_price=row[7],
+            btc_price=row[8],
+            timestamp=row[9],
+            note=row[10],
+            gold_gain=row[11],
+            btc_gain=row[12],
+            gain=row[13]
         )
 
     def __repr__(self):

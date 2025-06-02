@@ -32,6 +32,9 @@ class TransactionEntryView(QWidget):
         self.price_input = QLineEdit()
         self.price_input.setPlaceholderText("Price per unit")
 
+        self.unit_input = QComboBox()
+        self.unit_input.addItems(["USD", "GBP", "IRR"])
+
         self.note_input = QTextEdit()
         self.note_input.setPlaceholderText("Optional note...")
 
@@ -75,6 +78,8 @@ class TransactionEntryView(QWidget):
         layout.addWidget(self.amount_input)
         layout.addWidget(QLabel("Price per Unit:"))
         layout.addWidget(self.price_input)
+        layout.addWidget(QLabel("Currency Unit:"))
+        layout.addWidget(self.unit_input)
         layout.addWidget(QLabel("Note:"))
         layout.addWidget(self.note_input)
         layout.addWidget(QLabel("Date:"))
@@ -102,6 +107,7 @@ class TransactionEntryView(QWidget):
             "type": self.type_input.currentText(),
             "amount": self.amount_input.text().strip(),
             "price": self.price_input.text().strip(),
+            "unit": self.unit_input.currentText(),
             "note": self.note_input.toPlainText().strip(),
             "datetime": QDateTime.currentDateTime() if self.now_checkbox.isChecked() else self.date_input.dateTime(),
             "use_market_prices": self.use_market_prices_checkbox.isChecked(),

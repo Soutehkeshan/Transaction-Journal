@@ -23,6 +23,17 @@ class TransactionEntryController:
             tx_type = self.view.type_input.currentText()
             amount = float(self.view.amount_input.text())
             price = float(self.view.price_input.text())
+            unit = self.view.unit_input.currentText()
+
+            match unit:
+                case "USD":
+                    dollar_price = price
+
+                # TODO: Fetch these prices from a reliable source
+                case "IRR":
+                    dollar_price = 10
+                case "GBP":
+                    dollar_price = 20
 
             if self.view.use_market_prices_checkbox.isChecked():
                 gold_price = fetch_price(Asset.get_gold_details())
@@ -38,7 +49,7 @@ class TransactionEntryController:
                 timestamp = self.view.date_input.dateTime().toString("yyyy-MM-dd HH:mm:ss")
 
 
-            transaction = Transaction(symbol, tx_type, amount, price, price*amount, gold_price, btc_price, timestamp, note)
+            transaction = Transaction(symbol, tx_type, amount, price, unit, dollar_price, gold_price, btc_price, timestamp, note)
             transaction.save()
             self.view.status_label.setText("✅ Transaction added successfully!")
         except Exception as e:
