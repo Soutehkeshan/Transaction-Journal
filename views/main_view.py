@@ -7,7 +7,7 @@ class MainView(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Transaction Journal")
-        self.setMinimumSize(900, 500)
+        self.setMinimumSize(900, 700)
         
         # Create a central widget and layout
         self.central_widget = QWidget()
