@@ -35,6 +35,19 @@ class TransactionEntryView(QWidget):
         self.unit_input = QComboBox()
         self.unit_input.addItems(["USD", "GBP", "IRR"])
 
+        self.manual_dollar_checkbox = QCheckBox("Enter exchange rate manually")
+        self.manual_dollar_checkbox.setChecked(False)
+
+        self.dollar_price_input = QDoubleSpinBox()
+        self.dollar_price_input.setPrefix("1 unit = $")
+        self.dollar_price_input.setMaximum(100000)
+        self.dollar_price_input.setDecimals(4)
+        self.dollar_price_input.setEnabled(False)
+
+        self.manual_dollar_checkbox.stateChanged.connect(
+            lambda state: self.dollar_price_input.setEnabled(state == 2)
+        )
+
         self.note_input = QTextEdit()
         self.note_input.setPlaceholderText("Optional note...")
 
@@ -80,6 +93,8 @@ class TransactionEntryView(QWidget):
         layout.addWidget(self.price_input)
         layout.addWidget(QLabel("Currency Unit:"))
         layout.addWidget(self.unit_input)
+        layout.addWidget(self.manual_dollar_checkbox)
+        layout.addWidget(self.dollar_price_input)
         layout.addWidget(QLabel("Note:"))
         layout.addWidget(self.note_input)
         layout.addWidget(QLabel("Date:"))
@@ -112,7 +127,9 @@ class TransactionEntryView(QWidget):
             "datetime": QDateTime.currentDateTime() if self.now_checkbox.isChecked() else self.date_input.dateTime(),
             "use_market_prices": self.use_market_prices_checkbox.isChecked(),
             "gold_price": self.gold_price_input.value(),
-            "btc_price": self.btc_price_input.value()
+            "btc_price": self.btc_price_input.value(),
+            "manual_dollar": self.manual_dollar_checkbox.isChecked(),
+            "dollar_price": self.dollar_price_input.value()
         }
 
     def update_symbol_completer(self, symbols: List[str]):
