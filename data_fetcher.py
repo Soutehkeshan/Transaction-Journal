@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import yfinance as yf
 import pytse_client as tse
 
@@ -44,3 +45,33 @@ def fetch_tsetmc_price(symbol):
     except Exception as e:
         print(f"TSETMC error ({symbol}): {e}")
         return 0.0
+    
+def get_exchange_rate(currency: str, date: datetime) -> float | None:
+    """
+    Get the exchange rate of the given currency to USD on a specific date using Yahoo Finance.
+
+    Args:
+        currency (str): Currency code like 'GBP', 'IRR', etc.
+        date (datetime): Target date for the historical exchange rate.
+
+    Returns:
+        float or None
+    """
+    currency = currency.upper()
+
+    if currency == "USD":
+        return 1.0
+
+    ticker_symbol = f"{currency}USD=X"
+    try:
+        ticker = yf.Ticker(ticker_symbol)
+        history = ticker.history(start=date.strftime('%Y-%m-%d'), end=(date + timedelta(days=1)).strftime('%Y-%m-%d'))
+
+        if not history.empty:
+            return float(history["Close"].iloc[0])
+        else:
+            print(f"No exchange rate found for {currency} on {date.date()}")
+    except Exception as e:
+        print(f"Error fetching exchange rate for {currency}: {e}")
+    
+    return None
