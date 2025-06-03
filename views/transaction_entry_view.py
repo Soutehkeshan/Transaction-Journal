@@ -1,24 +1,28 @@
 from PyQt5.QtWidgets import (
-    QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QComboBox,
-    QTextEdit, QCompleter, QDateTimeEdit, QCheckBox, QDoubleSpinBox
+    QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout,
+    QComboBox, QTextEdit, QCompleter, QDateTimeEdit, QCheckBox, QDoubleSpinBox
 )
 from PyQt5.QtCore import QStringListModel, QDateTime, pyqtSignal
 from typing import List
 
 
 class TransactionEntryView(QWidget):
-    submitted = pyqtSignal()  # Controller will connect to this
+    submitted = pyqtSignal()
 
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Transaction Journal")
 
-        # --- Inputs ---
+        self.init_inputs()
+        self.init_layout()
+        self.init_connections()
+
+    def init_inputs(self):
+        # Symbol input with autocompletion
         self.symbol_input = QLineEdit()
         self.symbol_input.setPlaceholderText("Asset Symbol (e.g., BTCUSDT)")
-
-        self.symbol_completer = QCompleter()
         self.symbol_model = QStringListModel()
+        self.symbol_completer = QCompleter()
         self.symbol_completer.setModel(self.symbol_model)
         self.symbol_completer.setCaseSensitivity(False)
         self.symbol_input.setCompleter(self.symbol_completer)
@@ -44,10 +48,6 @@ class TransactionEntryView(QWidget):
         self.dollar_price_input.setDecimals(4)
         self.dollar_price_input.setEnabled(False)
 
-        self.manual_dollar_checkbox.stateChanged.connect(
-            lambda state: self.dollar_price_input.setEnabled(state == 2)
-        )
-
         self.note_input = QTextEdit()
         self.note_input.setPlaceholderText("Optional note...")
 
@@ -58,63 +58,91 @@ class TransactionEntryView(QWidget):
         self.now_checkbox = QCheckBox("Use current time")
         self.now_checkbox.setChecked(True)
         self.date_input.setEnabled(False)
-        self.now_checkbox.stateChanged.connect(self.toggle_date_input)
+
+        self.use_market_prices_checkbox = QCheckBox("Use current BTC/Gold prices")
+        self.use_market_prices_checkbox.setChecked(True)
 
         self.gold_price_input = QDoubleSpinBox()
         self.gold_price_input.setPrefix("Gold $")
         self.gold_price_input.setMaximum(100000)
         self.gold_price_input.setDecimals(2)
+        self.gold_price_input.setEnabled(False)
 
         self.btc_price_input = QDoubleSpinBox()
         self.btc_price_input.setPrefix("BTC $")
         self.btc_price_input.setMaximum(1000000)
         self.btc_price_input.setDecimals(2)
-
-        self.use_market_prices_checkbox = QCheckBox("Use current BTC/Gold prices")
-        self.use_market_prices_checkbox.setChecked(True)
-        self.gold_price_input.setEnabled(False)
         self.btc_price_input.setEnabled(False)
-        self.use_market_prices_checkbox.stateChanged.connect(self.toggle_price_inputs)
 
         self.submit_button = QPushButton("Submit")
-        self.submit_button.clicked.connect(self.submitted.emit)
+        self.status_label = QLabel("")
 
-        self.status_label = QLabel("")  # Optional: this could also move to a dialog/messagebox
-
-        # --- Layout ---
+    def init_layout(self):
         layout = QVBoxLayout()
-        layout.addWidget(QLabel("Asset Symbol:"))
-        layout.addWidget(self.symbol_input)
-        layout.addWidget(QLabel("Transaction Type:"))
-        layout.addWidget(self.type_input)
-        layout.addWidget(QLabel("Amount:"))
-        layout.addWidget(self.amount_input)
-        layout.addWidget(QLabel("Price per Unit:"))
-        layout.addWidget(self.price_input)
-        layout.addWidget(QLabel("Currency Unit:"))
-        layout.addWidget(self.unit_input)
-        layout.addWidget(self.manual_dollar_checkbox)
-        layout.addWidget(self.dollar_price_input)
+
+        # Row 1: Symbol + Type
+        row1 = QHBoxLayout()
+        row1.addWidget(QLabel("Symbol:"))
+        row1.addWidget(self.symbol_input)
+        row1.addWidget(QLabel("Type:"))
+        row1.addWidget(self.type_input)
+        layout.addLayout(row1)
+
+        # Row 2: Amount + Price + Unit
+        row2 = QHBoxLayout()
+        row2.addWidget(QLabel("Amount:"))
+        row2.addWidget(self.amount_input)
+        row2.addWidget(QLabel("Price:"))
+        row2.addWidget(self.price_input)
+        row2.addWidget(QLabel("Unit:"))
+        row2.addWidget(self.unit_input)
+        layout.addLayout(row2)
+
+        # Row 3: Manual dollar checkbox + input
+        row3 = QHBoxLayout()
+        row3.addWidget(self.manual_dollar_checkbox)
+        row3.addWidget(self.dollar_price_input)
+        layout.addLayout(row3)
+
+        # Note input
         layout.addWidget(QLabel("Note:"))
         layout.addWidget(self.note_input)
-        layout.addWidget(QLabel("Date:"))
-        layout.addWidget(self.date_input)
-        layout.addWidget(self.now_checkbox)
-        layout.addWidget(self.use_market_prices_checkbox)
-        layout.addWidget(self.gold_price_input)
-        layout.addWidget(self.btc_price_input)
+
+        # Row 4: Date picker + checkbox
+        row4 = QHBoxLayout()
+        row4.addWidget(QLabel("Date:"))
+        row4.addWidget(self.date_input)
+        row4.addWidget(self.now_checkbox)
+        layout.addLayout(row4)
+
+        # Row 5: BTC + Gold prices + checkbox
+        row5 = QHBoxLayout()
+        row5.addWidget(self.use_market_prices_checkbox)
+        row5.addWidget(self.gold_price_input)
+        row5.addWidget(self.btc_price_input)
+        layout.addLayout(row5)
+
+        # Submission and status
         layout.addWidget(self.submit_button)
         layout.addWidget(self.status_label)
 
         self.setLayout(layout)
 
+    def init_connections(self):
+        self.now_checkbox.stateChanged.connect(self.toggle_date_input)
+        self.use_market_prices_checkbox.stateChanged.connect(self.toggle_price_inputs)
+        self.manual_dollar_checkbox.stateChanged.connect(
+            lambda state: self.dollar_price_input.setEnabled(state == 2)
+        )
+        self.submit_button.clicked.connect(self.submitted.emit)
+
     def toggle_date_input(self, state):
         self.date_input.setEnabled(not state)
 
     def toggle_price_inputs(self, state):
-        use_manual = not state
-        self.gold_price_input.setEnabled(use_manual)
-        self.btc_price_input.setEnabled(use_manual)
+        manual = not state
+        self.gold_price_input.setEnabled(manual)
+        self.btc_price_input.setEnabled(manual)
 
     def get_form_data(self):
         return {
@@ -124,7 +152,8 @@ class TransactionEntryView(QWidget):
             "price": self.price_input.text().strip(),
             "unit": self.unit_input.currentText(),
             "note": self.note_input.toPlainText().strip(),
-            "datetime": QDateTime.currentDateTime() if self.now_checkbox.isChecked() else self.date_input.dateTime(),
+            "datetime": QDateTime.currentDateTime() if self.now_checkbox.isChecked()
+                        else self.date_input.dateTime(),
             "use_market_prices": self.use_market_prices_checkbox.isChecked(),
             "gold_price": self.gold_price_input.value(),
             "btc_price": self.btc_price_input.value(),

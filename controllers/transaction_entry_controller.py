@@ -1,5 +1,5 @@
 from datetime import datetime
-from data_fetcher import fetch_price
+from data_fetcher import fetch_price, get_exchange_rate
 from models.transaction import Transaction
 from models.asset import Asset
 
@@ -25,16 +25,27 @@ class TransactionEntryController:
             price = float(self.view.price_input.text())
             unit = self.view.unit_input.currentText()
 
-            match unit:
-                case "USD":
-                    dollar_price = price
+            # --- Date handling ---
+            if self.view.now_checkbox.isChecked():
+                timestamp_dt = datetime.now()
+            else:
+                timestamp_qt = self.view.date_input.dateTime()
+                timestamp_dt = timestamp_qt.toPyDateTime()
 
-                # TODO: Fetch these prices from a reliable source
-                case "IRR":
-                    dollar_price = 10
-                case "GBP":
-                    dollar_price = 20
+            # --- Dollar price per unit logic ---
+            if self.view.manual_dollar_checkbox.isChecked():
+                dollar_price = self.view.dollar_price_input.value()
+            else:
+                exchange_rate = get_exchange_rate(unit, timestamp_dt)
+                if unit == "IRR":
+                    self.view.status_label.setText(f"❌ Fetching IRR is not supported. Please enter it manually.")
+                    return
+                if exchange_rate is None:
+                    self.view.status_label.setText(f"❌ Could not find exchange rate for {unit} on {timestamp_dt.date()}")
+                    return
+                dollar_price = price * exchange_rate
 
+            # --- Market prices ---
             if self.view.use_market_prices_checkbox.isChecked():
                 gold_price = fetch_price(Asset.get_gold_details())
                 btc_price = fetch_price(Asset.get_btc_details())
@@ -43,15 +54,12 @@ class TransactionEntryController:
                 btc_price = self.view.btc_price_input.value()
 
             note = self.view.note_input.toPlainText().strip()
-            if self.view.now_checkbox.isChecked():
-                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            else:
-                timestamp = self.view.date_input.dateTime().toString("yyyy-MM-dd HH:mm:ss")
+            timestamp_str = timestamp_dt.strftime("%Y-%m-%d %H:%M:%S")
 
-
-            transaction = Transaction(symbol, tx_type, amount, price, unit, dollar_price, gold_price, btc_price, timestamp, note)
+            transaction = Transaction(symbol, tx_type, amount, price, unit, dollar_price, gold_price, btc_price, timestamp_str, note)
             transaction.save()
             self.view.status_label.setText("✅ Transaction added successfully!")
+
         except Exception as e:
             self.view.status_label.setText(f"❌ Error: {str(e)}")
 
