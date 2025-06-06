@@ -33,10 +33,11 @@ class InsightsController(QObject):
         latest_btc_price = fetch_price(btc)
 
         for tx in Transaction.get_all():
-            asset = Asset.get_by_symbol(tx.asset_id)
+            asset = Asset.get_by_id(tx.asset_id)
             if asset:
                 latest_asset_price = fetch_price(asset)
-                tx.calculate_gains(latest_asset_price, latest_gold_price, latest_btc_price)
+                type = "buy" if tx.type == "buy" else "sell"
+                tx.calculate_gains(latest_asset_price, latest_gold_price, latest_btc_price, type)
                 tx.save()
 
         print("Gains calculated and saved.")

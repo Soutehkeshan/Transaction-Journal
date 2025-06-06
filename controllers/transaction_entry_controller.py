@@ -1,5 +1,6 @@
 from datetime import datetime
 from data_fetcher import fetch_price, get_exchange_rate
+from database.db_utils import get_asset_id_by_symbol
 from models.transaction import Transaction
 from models.asset import Asset
 
@@ -19,6 +20,8 @@ class TransactionEntryController:
             if symbol not in existing_symbols:
                 self.view.status_label.setText("❌ Error: This asset does not exist. Please add it first.")
                 return
+            
+            asset_id = get_asset_id_by_symbol(symbol)
 
             tx_type = self.view.type_input.currentText()
             amount = float(self.view.amount_input.text())
@@ -56,7 +59,7 @@ class TransactionEntryController:
             note = self.view.note_input.toPlainText().strip()
             timestamp_str = timestamp_dt.strftime("%Y-%m-%d %H:%M:%S")
 
-            transaction = Transaction(symbol, tx_type, amount, price, unit, dollar_price, gold_price, btc_price, timestamp_str, note)
+            transaction = Transaction(asset_id, tx_type, amount, price, unit, dollar_price, gold_price, btc_price, timestamp_str, note)
             transaction.save()
             self.view.status_label.setText("✅ Transaction added successfully!")
 
