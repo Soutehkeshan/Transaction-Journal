@@ -2,7 +2,7 @@ from database.db_utils import get_db_connection
 
 class Transaction:
     def __init__(self, asset_id, type, amount, price_per_unit, unit,
-                 dollar_price_per_unit, gold_price, btc_price, timestamp,
+                 currency_exchange_rate, gold_price, btc_price, timestamp,
                  note="", id=None, gold_gain=0, btc_gain=0, gain=0):
         self.id = id
         self.asset_id = asset_id
@@ -10,9 +10,9 @@ class Transaction:
         self.amount = amount
         self.price_per_unit = price_per_unit
         self.unit = unit
-        self.dollar_price_per_unit = dollar_price_per_unit
+        self.currency_exchange_rate = currency_exchange_rate
         self.total = self.amount * self.price_per_unit
-        self.dollar_total = self.amount * self.dollar_price_per_unit
+        self.dollar_total = self.amount * self.currency_exchange_rate * self.price_per_unit
         self.gold_price = gold_price
         self.btc_price = btc_price
         self.timestamp = timestamp
@@ -27,12 +27,12 @@ class Transaction:
         if self.id is None:
             cursor.execute("""
                            INSERT INTO transactions (asset_id, type, amount, price_per_unit,
-                           unit, dollar_price_per_unit,
+                           unit, currency_exchange_rate,
                            gold_price, btc_price, timestamp, note, gold_gain, btc_gain, gain)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                            """, (
                                self.asset_id, self.type, self.amount, self.price_per_unit, self.unit,
-                               self.dollar_price_per_unit,
+                               self.currency_exchange_rate,
                                self.gold_price, self.btc_price, self.timestamp, self.note, 0, 0, 0
                                ))
             self.id = cursor.lastrowid
@@ -40,12 +40,12 @@ class Transaction:
             cursor.execute("""
                            UPDATE transactions
                            SET asset_id=?, type=?, amount=?, price_per_unit=?, unit=?,
-                           dollar_price_per_unit=?, gold_price=?,
+                           currency_exchange_rate=?, gold_price=?,
                            btc_price=?, timestamp=?, note=?, gold_gain=?, btc_gain=?, gain=?
                            WHERE id=?
                            """, (
                                self.asset_id, self.type, self.amount, self.price_per_unit, self.unit,
-                               self.dollar_price_per_unit, self.gold_price,
+                               self.currency_exchange_rate, self.gold_price,
                                self.btc_price, self.timestamp, self.note, self.gold_gain, self.btc_gain, self.gain, self.id
                                ))
 
@@ -117,7 +117,7 @@ class Transaction:
             amount=row[3],
             price_per_unit=row[4],
             unit=row[5],
-            dollar_price_per_unit=row[6],
+            currency_exchange_rate=row[6],
             gold_price=row[7],
             btc_price=row[8],
             timestamp=row[9],

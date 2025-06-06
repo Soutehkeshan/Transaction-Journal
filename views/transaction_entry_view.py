@@ -43,11 +43,9 @@ class TransactionEntryView(QWidget):
         self.manual_dollar_checkbox = QCheckBox("Enter exchange rate manually")
         self.manual_dollar_checkbox.setChecked(False)
 
-        self.dollar_price_input = QDoubleSpinBox()
-        self.dollar_price_input.setPrefix("1 unit = $")
-        self.dollar_price_input.setMaximum(100000)
-        self.dollar_price_input.setDecimals(4)
-        self.dollar_price_input.setEnabled(False)
+        self.currency_exchange_rate = QDoubleSpinBox()
+        self.currency_exchange_rate.setPrefix("1 unit = $")
+        self.currency_exchange_rate.setEnabled(False)
 
         self.note_input = QTextEdit()
         self.note_input.setPlaceholderText("Optional note...")
@@ -102,7 +100,7 @@ class TransactionEntryView(QWidget):
         # Row 3: Manual dollar checkbox + input
         row3 = QHBoxLayout()
         row3.addWidget(self.manual_dollar_checkbox)
-        row3.addWidget(self.dollar_price_input)
+        row3.addWidget(self.currency_exchange_rate)
         layout.addLayout(row3)
 
         # Note input
@@ -133,7 +131,7 @@ class TransactionEntryView(QWidget):
         self.now_checkbox.stateChanged.connect(self.toggle_date_input)
         self.use_market_prices_checkbox.stateChanged.connect(self.toggle_price_inputs)
         self.manual_dollar_checkbox.stateChanged.connect(
-            lambda state: self.dollar_price_input.setEnabled(state == 2)
+            lambda state: self.currency_exchange_rate.setEnabled(state == 2)
         )
         self.submit_button.clicked.connect(self.submitted.emit)
 
@@ -162,7 +160,7 @@ class TransactionEntryView(QWidget):
             "gold_price": self.gold_price_input.value(),
             "btc_price": self.btc_price_input.value(),
             "manual_dollar": self.manual_dollar_checkbox.isChecked(),
-            "dollar_price": self.dollar_price_input.value()
+            "currency_exchange_rate": self.currency_exchange_rate.value()
         }
 
     def update_symbol_completer(self, symbols: List[str]):

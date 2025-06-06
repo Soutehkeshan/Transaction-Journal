@@ -37,7 +37,7 @@ class TransactionEntryController:
 
             # --- Dollar price per unit logic ---
             if self.view.manual_dollar_checkbox.isChecked():
-                dollar_price = self.view.dollar_price_input.value()
+                currency_exchange_rate = self.view.currency_exchange_rate.value()
             else:
                 exchange_rate = get_exchange_rate(unit, timestamp_dt)
                 if unit == "IRR":
@@ -46,7 +46,7 @@ class TransactionEntryController:
                 if exchange_rate is None:
                     self.view.status_label.setText(f"❌ Could not find exchange rate for {unit} on {timestamp_dt.date()}")
                     return
-                dollar_price = price * exchange_rate
+                currency_exchange_rate = exchange_rate
 
             # --- Market prices ---
             if self.view.use_market_prices_checkbox.isChecked():
@@ -59,7 +59,7 @@ class TransactionEntryController:
             note = self.view.note_input.toPlainText().strip()
             timestamp_str = timestamp_dt.strftime("%Y-%m-%d %H:%M:%S")
 
-            transaction = Transaction(asset_id, tx_type, amount, price, unit, dollar_price, gold_price, btc_price, timestamp_str, note)
+            transaction = Transaction(asset_id, tx_type, amount, price, unit, currency_exchange_rate, gold_price, btc_price, timestamp_str, note)
             transaction.save()
             self.view.status_label.setText("✅ Transaction added successfully!")
 

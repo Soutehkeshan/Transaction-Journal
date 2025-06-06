@@ -33,7 +33,7 @@ def init_db():
         amount REAL,
         price_per_unit REAL,
         unit TEXT CHECK(unit IN ('USD', 'GBP', 'IRR')),
-        dollar_price_per_unit REAL,
+        currency_exchange_rate REAL,
         gold_price REAL,
         btc_price REAL,
         timestamp TEXT,
