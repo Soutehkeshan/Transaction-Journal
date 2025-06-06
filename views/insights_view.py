@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem
+from database.db_utils import get_symbol_by_asset_id
 
 class InsightsView(QWidget):
     def __init__(self):
@@ -44,9 +45,11 @@ class InsightsView(QWidget):
 
         # Table
         self.table = QTableWidget()
-        self.table.setColumnCount(8)
+        self.table.setColumnCount(15)
         self.table.setHorizontalHeaderLabels([
-            "Asset", "Amount", "Price per Unit", "Total",
+            "Asset", "Type", "Amount", "Price per Unit",
+            "Unit", "Dollar Price per Unit", "Total", "Dollar Total",
+            "Gold Price", "BTC Price", "Note",
             "Gain", "BTC Gain", "Gold Gain", "DateTime"
         ])
         layout.addWidget(self.table)
@@ -57,11 +60,21 @@ class InsightsView(QWidget):
         self.table.setRowCount(len(transactions))
         for row, tx in enumerate(transactions):
             total_value = tx.amount * tx.price_per_unit
-            self.table.setItem(row, 0, QTableWidgetItem(str(tx.asset_id)))
-            self.table.setItem(row, 1, QTableWidgetItem(str(tx.amount)))
-            self.table.setItem(row, 2, QTableWidgetItem(str(tx.price_per_unit)))
-            self.table.setItem(row, 3, QTableWidgetItem(f"{total_value:.2f}"))
-            self.table.setItem(row, 4, QTableWidgetItem(f"{tx.gain:.2f}"))
-            self.table.setItem(row, 5, QTableWidgetItem(f"{tx.btc_gain:.6f}"))
-            self.table.setItem(row, 6, QTableWidgetItem(f"{tx.gold_gain:.6f}"))
-            self.table.setItem(row, 7, QTableWidgetItem(str(tx.timestamp)))
+            dollar_total_value = tx.amount * tx.dollar_price_per_unit
+            self.table.setItem(row, 0, QTableWidgetItem(get_symbol_by_asset_id(tx.asset_id)))
+            self.table.setItem(row, 1, QTableWidgetItem(tx.type))
+            self.table.setItem(row, 2, QTableWidgetItem(f"{tx.amount:.5f}"))
+            self.table.setItem(row, 3, QTableWidgetItem(f"{tx.price_per_unit:.2f}"))
+            self.table.setItem(row, 4, QTableWidgetItem(tx.unit))
+            self.table.setItem(row, 5, QTableWidgetItem(f"{tx.dollar_price_per_unit:.2f}"))
+            self.table.setItem(row, 6, QTableWidgetItem(f"{total_value:.2f}"))
+            self.table.setItem(row, 7, QTableWidgetItem(f"{dollar_total_value:.2f}"))
+
+            self.table.setItem(row, 8, QTableWidgetItem(f"{tx.gold_price:.2f}"))
+            self.table.setItem(row, 9, QTableWidgetItem(f"{tx.btc_price:.2f}"))
+            self.table.setItem(row, 10, QTableWidgetItem(tx.note))
+
+            self.table.setItem(row, 11, QTableWidgetItem(f"{tx.gain:.2f}"))
+            self.table.setItem(row, 12, QTableWidgetItem(f"{tx.btc_gain:.6f}"))
+            self.table.setItem(row, 13, QTableWidgetItem(f"{tx.gold_gain:.6f}"))
+            self.table.setItem(row, 14, QTableWidgetItem(str(tx.timestamp)))
