@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import QStringListModel, QDateTime, pyqtSignal
 from typing import List
 
+from database.db_utils import get_asset_id_by_symbol
 
 class TransactionEntryView(QWidget):
     submitted = pyqtSignal()
@@ -145,8 +146,11 @@ class TransactionEntryView(QWidget):
         self.btc_price_input.setEnabled(manual)
 
     def get_form_data(self):
+        symbol = self.symbol_input.text().strip().upper()
+        asset_id = get_asset_id_by_symbol(symbol)
+
         return {
-            "symbol": self.symbol_input.text().strip(),
+            "asset_id": asset_id,
             "type": self.type_input.currentText(),
             "amount": self.amount_input.text().strip(),
             "price": self.price_input.text().strip(),
