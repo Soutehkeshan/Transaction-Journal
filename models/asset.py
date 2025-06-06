@@ -61,3 +61,15 @@ class Asset:
         if row:
             return cls(id=row[0], symbol=row[1], data_source=row[2], source_symbol=row[3])
         return None
+    
+    @classmethod
+    def get_by_id(cls, id):
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM assets WHERE id = ?", (id,))
+        row = cursor.fetchone()
+        conn.close()
+
+        if row:
+            return cls(id=row[0], symbol=row[1], data_source=row[2], source_symbol=row[3])
+        return None
