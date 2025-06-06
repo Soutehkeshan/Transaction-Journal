@@ -34,8 +34,6 @@ def init_db():
         price_per_unit REAL,
         unit TEXT CHECK(unit IN ('USD', 'GBP', 'IRR')),
         dollar_price_per_unit REAL,
-        total REAL,
-        dollar_total REAL,
         gold_price REAL,
         btc_price REAL,
         timestamp TEXT,
