@@ -27,12 +27,12 @@ class Transaction:
         if self.id is None:
             cursor.execute("""
                            INSERT INTO transactions (asset_id, type, amount, price_per_unit,
-                           unit, dollar_price_per_unit, total, dollar_total,
+                           unit, dollar_price_per_unit,
                            gold_price, btc_price, timestamp, note, gold_gain, btc_gain, gain)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                            """, (
                                self.asset_id, self.type, self.amount, self.price_per_unit, self.unit,
-                               self.dollar_price_per_unit, self.total, self.dollar_total,
+                               self.dollar_price_per_unit,
                                self.gold_price, self.btc_price, self.timestamp, self.note, 0, 0, 0
                                ))
             self.id = cursor.lastrowid
@@ -40,12 +40,12 @@ class Transaction:
             cursor.execute("""
                            UPDATE transactions
                            SET asset_id=?, type=?, amount=?, price_per_unit=?, unit=?,
-                           dollar_price_per_unit=?, total=?, dollar_total=?, gold_price=?,
+                           dollar_price_per_unit=?, gold_price=?,
                            btc_price=?, timestamp=?, note=?, gold_gain=?, btc_gain=?, gain=?
                            WHERE id=?
                            """, (
                                self.asset_id, self.type, self.amount, self.price_per_unit, self.unit,
-                               self.dollar_price_per_unit, self.total, self.dollar_total, self.gold_price,
+                               self.dollar_price_per_unit, self.gold_price,
                                self.btc_price, self.timestamp, self.note, self.gold_gain, self.btc_gain, self.gain, self.id
                                ))
 
@@ -62,17 +62,33 @@ class Transaction:
         conn.close()
         self.id = None
 
-    def calculate_gains(self, latest_asset_price, latest_gold_price, latest_btc_price):
-        self.gain = latest_asset_price / self.price_per_unit
+    def calculate_gains(self, latest_asset_price, latest_gold_price, latest_btc_price, tx_type):
+        if not self.price_per_unit or not latest_asset_price:
+            self.gain = 0
+        else:
+            self.gain = (
+                latest_asset_price / self.price_per_unit # Buy
+                if tx_type == "buy"
+                else self.price_per_unit / latest_asset_price # Sell
+            )
 
-        self.gold_gain = (
-            self.gain * (self.gold_price / latest_gold_price)
-            if latest_gold_price and self.gold_price else 0
-        )
-        self.btc_gain = (
-            self.gain * (self.btc_price / latest_btc_price)
-            if latest_btc_price and self.btc_price else 0
-        )
+        if latest_gold_price and self.gold_price:
+            self.gold_gain = (
+                self.gain * (self.gold_price / latest_gold_price)
+                if tx_type == "buy"
+                else self.gain * (latest_gold_price / self.gold_price)
+            )
+        else:
+            self.gold_gain = 0
+
+        if latest_btc_price and self.btc_price:
+            self.btc_gain = (
+                self.gain * (self.btc_price / latest_btc_price)
+                if tx_type == "buy"
+                else self.gain * (latest_btc_price / self.btc_price)
+            )
+        else:
+            self.btc_gain = 0
 
     @classmethod
     def get_by_id(cls, id):
