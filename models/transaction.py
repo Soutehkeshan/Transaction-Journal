@@ -62,16 +62,16 @@ class Transaction:
         conn.close()
         self.id = None
 
-    def calculate_gains(self, latest_asset_price, latest_gold_price, latest_btc_price, tx_type):
-        if not self.price_per_unit or not latest_asset_price:
+    def calculate_gains(self, original_price_usd, latest_price_usd, latest_gold_price, latest_btc_price, tx_type):
+        if not original_price_usd or not latest_price_usd:
             self.gain = 0
         else:
             self.gain = (
-                latest_asset_price / self.price_per_unit # Buy
-                if tx_type == "buy"
-                else self.price_per_unit / latest_asset_price # Sell
+                latest_price_usd / original_price_usd if tx_type == "buy"
+                else original_price_usd / latest_price_usd
             )
 
+        # Gold-relative gain
         if latest_gold_price and self.gold_price:
             self.gold_gain = (
                 self.gain * (self.gold_price / latest_gold_price)
@@ -81,6 +81,7 @@ class Transaction:
         else:
             self.gold_gain = 0
 
+        # BTC-relative gain
         if latest_btc_price and self.btc_price:
             self.btc_gain = (
                 self.gain * (self.btc_price / latest_btc_price)

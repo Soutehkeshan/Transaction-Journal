@@ -1,7 +1,8 @@
+from datetime import datetime
 from PyQt5.QtCore import QObject
 from models.asset import Asset
 from models.transaction import Transaction
-from data_fetcher import fetch_price
+from data_fetcher import fetch_price, get_exchange_rate
 
 class InsightsController(QObject):
     def __init__(self, view):
@@ -31,16 +32,39 @@ class InsightsController(QObject):
 
         latest_gold_price = fetch_price(gold)
         latest_btc_price = fetch_price(btc)
+        timestamp_dt = datetime.now()
+        GBP_to_USD = get_exchange_rate("GBP", timestamp_dt)
+        IRR_to_USD = get_exchange_rate("IRR", timestamp_dt)
 
         for tx in Transaction.get_all():
             asset = Asset.get_by_id(tx.asset_id)
-            if asset:
-                latest_asset_price = fetch_price(asset)
-                type = "buy" if tx.type == "buy" else "sell"
-                tx.calculate_gains(latest_asset_price, latest_gold_price, latest_btc_price, type)
-                tx.save()
+            if not asset:
+                continue
+
+            # Get latest asset price in original currency
+            latest_asset_price = fetch_price(asset)
+
+            # Convert both to USD
+            if tx.unit == "USD":
+                original_price_usd = tx.price_per_unit
+                latest_price_usd = latest_asset_price
+            elif tx.unit == "GBP":
+                original_price_usd = tx.price_per_unit * tx.currency_exchange_rate
+                latest_price_usd = latest_asset_price * GBP_to_USD
+            elif tx.unit == "IRR":
+                original_price_usd = tx.price_per_unit * tx.currency_exchange_rate
+                latest_price_usd = latest_asset_price * IRR_to_USD
+            else:
+                print(f"Unsupported currency unit: {tx.unit}")
+                continue
+
+            tx_type = tx.type  # "buy" or "sell"
+            print(original_price_usd, latest_price_usd, latest_gold_price, latest_btc_price, tx_type)
+            tx.calculate_gains(original_price_usd, latest_price_usd, latest_gold_price, latest_btc_price, tx_type)
+            tx.save()
 
         print("Gains calculated and saved.")
+
 
     def sort_and_display(self, key, reverse):
         transactions = Transaction.get_all()
