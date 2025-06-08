@@ -44,8 +44,14 @@ class TransactionEntryView(QWidget):
         self.manual_dollar_checkbox.setChecked(False)
 
         self.currency_exchange_rate = QDoubleSpinBox()
-        self.currency_exchange_rate.setPrefix("1 unit = $")
+        self.currency_exchange_rate.setPrefix("Rate: ")
+        self.currency_exchange_rate.setDecimals(10)
+        self.currency_exchange_rate.setMaximum(1000000)
         self.currency_exchange_rate.setEnabled(False)
+
+        self.exchange_direction = QComboBox()
+        self.exchange_direction.addItems(["$1 = X unit", "1 unit = $X"])
+        self.exchange_direction.setEnabled(False)
 
         self.note_input = QTextEdit()
         self.note_input.setPlaceholderText("Optional note...")
@@ -97,10 +103,11 @@ class TransactionEntryView(QWidget):
         row2.addWidget(self.unit_input)
         layout.addLayout(row2)
 
-        # Row 3: Manual dollar checkbox + input
+        # Row 3: Manual exchange rate checkbox + value + direction
         row3 = QHBoxLayout()
         row3.addWidget(self.manual_dollar_checkbox)
         row3.addWidget(self.currency_exchange_rate)
+        row3.addWidget(self.exchange_direction)
         layout.addLayout(row3)
 
         # Note input
@@ -130,9 +137,7 @@ class TransactionEntryView(QWidget):
     def init_connections(self):
         self.now_checkbox.stateChanged.connect(self.toggle_date_input)
         self.use_market_prices_checkbox.stateChanged.connect(self.toggle_price_inputs)
-        self.manual_dollar_checkbox.stateChanged.connect(
-            lambda state: self.currency_exchange_rate.setEnabled(state == 2)
-        )
+        self.manual_dollar_checkbox.stateChanged.connect(self.toggle_exchange_inputs)
         self.submit_button.clicked.connect(self.submitted.emit)
 
     def toggle_date_input(self, state):
@@ -143,9 +148,22 @@ class TransactionEntryView(QWidget):
         self.gold_price_input.setEnabled(manual)
         self.btc_price_input.setEnabled(manual)
 
+    def toggle_exchange_inputs(self, state):
+        enabled = state == 2
+        self.currency_exchange_rate.setEnabled(enabled)
+        self.exchange_direction.setEnabled(enabled)
+
     def get_form_data(self):
         symbol = self.symbol_input.text().strip().upper()
         asset_id = get_asset_id_by_symbol(symbol)
+
+        # Normalize exchange rate
+        rate_value = self.currency_exchange_rate.value()
+        direction = self.exchange_direction.currentText()
+        normalized_rate = (
+            rate_value if direction == "1 unit = $X"
+            else (1 / rate_value if rate_value != 0 else 0)
+        )
 
         return {
             "asset_id": asset_id,
@@ -160,7 +178,7 @@ class TransactionEntryView(QWidget):
             "gold_price": self.gold_price_input.value(),
             "btc_price": self.btc_price_input.value(),
             "manual_dollar": self.manual_dollar_checkbox.isChecked(),
-            "currency_exchange_rate": self.currency_exchange_rate.value()
+            "currency_exchange_rate": normalized_rate
         }
 
     def update_symbol_completer(self, symbols: List[str]):

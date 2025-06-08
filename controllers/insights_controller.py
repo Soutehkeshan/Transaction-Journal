@@ -34,7 +34,7 @@ class InsightsController(QObject):
         latest_btc_price = fetch_price(btc)
         timestamp_dt = datetime.now()
         GBP_to_USD = get_exchange_rate("GBP", timestamp_dt)
-        IRR_to_USD = get_exchange_rate("IRR", timestamp_dt)
+        IRR_to_USD = (1/float(self.view.irr_input.text())) if self.irr_input.text() else None
 
         for tx in Transaction.get_all():
             asset = Asset.get_by_id(tx.asset_id)

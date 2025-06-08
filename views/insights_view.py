@@ -7,9 +7,23 @@ class InsightsView(QWidget):
 
         layout = QVBoxLayout()
 
-        # Calculate Gains button
+        # IRR input and Calculate Gains button
+        irr_layout = QHBoxLayout()
+
+        from PyQt5.QtWidgets import QLabel, QLineEdit
+
+        self.irr_label = QLabel("USD to IRR:")
+        self.irr_input = QLineEdit()
+        self.irr_input.setPlaceholderText("e.g., 800000")
+
         self.calculate_gains_btn = QPushButton("Calculate Gains")
-        layout.addWidget(self.calculate_gains_btn)
+
+        irr_layout.addWidget(self.irr_label)
+        irr_layout.addWidget(self.irr_input)
+        irr_layout.addWidget(self.calculate_gains_btn)
+        irr_layout.addStretch()
+
+        layout.addLayout(irr_layout)
 
         # Sorting buttons
         button_layout_1 = QHBoxLayout()

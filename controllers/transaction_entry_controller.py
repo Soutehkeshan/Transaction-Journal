@@ -37,7 +37,13 @@ class TransactionEntryController:
 
             # --- Dollar price per unit logic ---
             if self.view.manual_dollar_checkbox.isChecked():
-                currency_exchange_rate = self.view.currency_exchange_rate.value()
+                # Normalize exchange rate
+                rate_value = self.view.currency_exchange_rate.value()
+                direction = self.view.exchange_direction.currentText()
+                currency_exchange_rate = (
+                    rate_value if direction == "1 unit = $X"
+                    else (1 / rate_value if rate_value != 0 else 0)
+                )
             else:
                 exchange_rate = get_exchange_rate(unit, timestamp_dt)
                 if unit == "IRR":
