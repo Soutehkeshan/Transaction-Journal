@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import Optional
 import yfinance as yf
 import pytse_client as tse
 
@@ -46,7 +47,7 @@ def fetch_tsetmc_price(symbol):
         print(f"TSETMC error ({symbol}): {e}")
         return 0.0
     
-def get_exchange_rate(currency: str, date: datetime) -> float | None:
+def get_exchange_rate(currency: str, date: datetime) -> Optional[float]:
     """
     Get the exchange rate of the given currency to USD on a specific date using Yahoo Finance.
 
