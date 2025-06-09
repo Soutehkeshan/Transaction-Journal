@@ -1,6 +1,7 @@
 from datetime import datetime
-from data_fetcher import fetch_price, get_exchange_rate
-from database.db_utils import get_asset_id_by_symbol
+
+import jdatetime
+from data_fetcher import fetch_gold_price, fetch_price
 from models.transaction import Transaction
 from models.asset import Asset
 
@@ -14,63 +15,41 @@ class TransactionEntryController:
         self.view.submit_button.clicked.connect(self.handle_submit)
 
     def handle_submit(self):
-        try:
+        # try:
             symbol = self.view.symbol_input.text().strip().upper()
+
             existing_symbols = Asset.get_all_symbols()
             if symbol not in existing_symbols:
-                self.view.status_label.setText("❌ Error: This asset does not exist. Please add it first.")
-                return
+                asset = Asset(symbol)
+                asset.save()
             
-            asset_id = get_asset_id_by_symbol(symbol)
+            asset_id = Asset.get_by_symbol(symbol).id
 
-            tx_type = self.view.type_input.currentText()
+            tx_type = "buy" if self.view.type_input.currentText() == "خرید" else "sell"
             amount = float(self.view.amount_input.text())
             price = float(self.view.price_input.text())
-            unit = self.view.unit_input.currentText()
 
             # --- Date handling ---
             if self.view.now_checkbox.isChecked():
-                timestamp_dt = datetime.now()
+                timestamp = jdatetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             else:
                 timestamp_qt = self.view.date_input.dateTime()
-                timestamp_dt = timestamp_qt.toPyDateTime()
-
-            # --- Dollar price per unit logic ---
-            if self.view.manual_dollar_checkbox.isChecked():
-                # Normalize exchange rate
-                rate_value = self.view.currency_exchange_rate.value()
-                direction = self.view.exchange_direction.currentText()
-                currency_exchange_rate = (
-                    rate_value if direction == "1 unit = $X"
-                    else (1 / rate_value if rate_value != 0 else 0)
-                )
-            else:
-                exchange_rate = get_exchange_rate(unit, timestamp_dt)
-                if unit == "IRR":
-                    self.view.status_label.setText(f"❌ Fetching IRR is not supported. Please enter it manually.")
-                    return
-                if exchange_rate is None:
-                    self.view.status_label.setText(f"❌ Could not find exchange rate for {unit} on {timestamp_dt.date()}")
-                    return
-                currency_exchange_rate = exchange_rate
+                timestamp = timestamp_qt.toPyDateTime()
 
             # --- Market prices ---
-            if self.view.use_market_prices_checkbox.isChecked():
-                gold_price = fetch_price(Asset.get_gold_details())
-                btc_price = fetch_price(Asset.get_btc_details())
+            if self.view.use_market_price_checkbox.isChecked():
+                gold_price = fetch_gold_price()
             else:
                 gold_price = self.view.gold_price_input.value()
-                btc_price = self.view.btc_price_input.value()
 
             note = self.view.note_input.toPlainText().strip()
-            timestamp_str = timestamp_dt.strftime("%Y-%m-%d %H:%M:%S")
 
-            transaction = Transaction(asset_id, tx_type, amount, price, unit, currency_exchange_rate, gold_price, btc_price, timestamp_str, note)
+            transaction = Transaction(asset_id, tx_type, amount, price, gold_price, timestamp, note)
             transaction.save()
             self.view.status_label.setText("✅ Transaction added successfully!")
 
-        except Exception as e:
-            self.view.status_label.setText(f"❌ Error: {str(e)}")
+        # except Exception as e:
+        #     self.view.status_label.setText(f"❌ Error: {str(e)}")
 
     def update_symbol_suggestions(self):
         try:

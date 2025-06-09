@@ -4,3 +4,4 @@ pandas>=1.3.0           # For data manipulation and analysis
 yfinance>=0.2.59        # For fetching financial data from Yahoo Finance
 pytse-client>=0.19.1    # For fetching TSETMC data
 pytest-qt>=4.4.0        # For testing PyQt applications
+jdatetime>=3.8.2        # For handling Jalali dates

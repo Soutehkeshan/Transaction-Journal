@@ -1,18 +1,108 @@
 from PyQt5.QtWidgets import (
     QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout,
-    QComboBox, QTextEdit, QCompleter, QDateTimeEdit, QCheckBox, QDoubleSpinBox
+    QComboBox, QTextEdit, QCompleter, QCheckBox, QDoubleSpinBox, QFormLayout, QBoxLayout,
+    QFrame, QApplication
 )
-from PyQt5.QtCore import QStringListModel, QDateTime, pyqtSignal
+from PyQt5.QtCore import QStringListModel, pyqtSignal, Qt
+import jdatetime
 from typing import List
-
-from database.db_utils import get_asset_id_by_symbol
+import sys
 
 class TransactionEntryView(QWidget):
     submitted = pyqtSignal()
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Transaction Journal")
+        self.setWindowTitle("ثبت تراکنش جدید")
+        self.setMinimumWidth(650) # Increased width significantly for wider fields and centering
+        self.setLayoutDirection(Qt.RightToLeft)
+        self.setStyleSheet("""
+    QWidget {
+        background-color: #F8F8F8;
+        font-family: "Tahoma", "Arial", "B Nazanin", "IRANSans", sans-serif;
+        font-size: 10pt;
+    }
+    QLabel {
+        color: #333;
+        background: #F0F4F8;
+        border: 1px solid #E0E0E0;
+        border-radius: 7px;
+        padding: 8px 14px;
+        font-size: 12pt;
+        font-weight: 600;
+        margin-left: 10px;
+        margin-bottom: 4px;
+        letter-spacing: 0.5px;
+    }
+    #statusLabel {
+        color: #D32F2F;
+        font-weight: bold;
+        margin-top: 10px;
+    }
+    QLineEdit, QTextEdit, QComboBox, QDoubleSpinBox {
+        border: 1px solid #CCCCCC;
+        border-radius: 5px;
+        padding: 8px;
+        background-color: #FFFFFF;
+        color: #333333;
+    }
+    QLineEdit:focus, QTextEdit:focus, QComboBox:focus, QDoubleSpinBox:focus {
+        border: 1px solid #007ACC; /* Highlight on focus */
+    }
+    QPushButton {
+        background-color: #007ACC;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        font-weight: bold;
+        min-width: 150px; /* Ensure button has a minimum width */
+    }
+    QPushButton:hover {
+        background-color: #005F99;
+    }
+    QCheckBox {
+        color: #333333;
+        spacing: 8px;
+    }
+    QCheckBox::indicator {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #999999;
+        border-radius: 3px;
+        background-color: #FFFFFF;
+    }
+    QCheckBox::indicator:checked {
+        background-color: #007ACC; /* Blue background when checked */
+        border: 1px solid #007ACC;
+        image: url(C:/Users/moham/PycharmProjects/TseClient/assets/icons/tick_white.png); /* Path to your white tick icon */
+    }
+    QComboBox::drop-down {
+        subcontrol-origin: padding;
+        subcontrol-position: left; /* Align dropdown arrow to the left for RTL */
+        width: 20px;
+        border-left-width: 1px;
+        border-left-color: #CCCCCC;
+        border-left-style: solid;
+        border-top-right-radius: 3px;
+        border-bottom-right-radius: 3px;
+    }
+    QComboBox::down-arrow {
+        image: url(C:/Users/moham/PycharmProjects/TseClient/assets/icons/arrow_left.png); /* Path to your left-pointing arrow icon */
+    }
+    QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
+        width: 20px;
+        border-left: 1px solid #CCCCCC;
+        border-top-right-radius: 3px;
+        border-bottom-right-radius: 3px;
+    }
+    QDoubleSpinBox::up-arrow {
+        image: url(C:/Users/moham/PycharmProjects/TseClient/assets/icons/arrow_up.png);
+    }
+    QDoubleSpinBox::down-arrow {
+        image: url(C:/Users/moham/PycharmProjects/TseClient/assets/icons/arrow_down.png);
+    }
+        """)
 
         self.init_inputs()
         self.init_layout()
@@ -21,165 +111,155 @@ class TransactionEntryView(QWidget):
     def init_inputs(self):
         # Symbol input with autocompletion
         self.symbol_input = QLineEdit()
-        self.symbol_input.setPlaceholderText("Asset Symbol (e.g., BTCUSDT)")
+        self.symbol_input.setPlaceholderText("نماد سهام (مثلاً: پارسیان)")
+        self.symbol_input.setAlignment(Qt.AlignRight)
+        self.symbol_input.setMinimumWidth(350) # Increased width
+
         self.symbol_model = QStringListModel()
-        self.symbol_completer = QCompleter()
-        self.symbol_completer.setModel(self.symbol_model)
+        self.symbol_completer = QCompleter(self.symbol_model)
         self.symbol_completer.setCaseSensitivity(False)
         self.symbol_input.setCompleter(self.symbol_completer)
 
         self.type_input = QComboBox()
-        self.type_input.addItems(["buy", "sell"])
+        self.type_input.addItems(["خرید", "فروش"])
+        self.type_input.setEditable(False)
+        self.type_input.setLayoutDirection(Qt.RightToLeft)
+        self.type_input.setMinimumWidth(350) # Increased width
+        self.type_input.setStyleSheet("QComboBox { text-align: right; }") # Align text in combobox
 
         self.amount_input = QLineEdit()
-        self.amount_input.setPlaceholderText("Amount")
+        self.amount_input.setPlaceholderText("مثلاً: 100")
+        self.amount_input.setAlignment(Qt.AlignRight)
+        self.amount_input.setMinimumWidth(350) # Increased width
 
         self.price_input = QLineEdit()
-        self.price_input.setPlaceholderText("Price per unit")
-
-        self.unit_input = QComboBox()
-        self.unit_input.addItems(["USD", "GBP", "IRR"])
-
-        self.manual_dollar_checkbox = QCheckBox("Enter exchange rate manually")
-        self.manual_dollar_checkbox.setChecked(False)
-
-        self.currency_exchange_rate = QDoubleSpinBox()
-        self.currency_exchange_rate.setPrefix("Rate: ")
-        self.currency_exchange_rate.setDecimals(10)
-        self.currency_exchange_rate.setMaximum(1000000)
-        self.currency_exchange_rate.setEnabled(False)
-
-        self.exchange_direction = QComboBox()
-        self.exchange_direction.addItems(["$1 = X unit", "1 unit = $X"])
-        self.exchange_direction.setEnabled(False)
+        self.price_input.setPlaceholderText("مثلاً: 2500")
+        self.price_input.setAlignment(Qt.AlignRight)
+        self.price_input.setMinimumWidth(350) # Increased width
 
         self.note_input = QTextEdit()
-        self.note_input.setPlaceholderText("Optional note...")
+        self.note_input.setPlaceholderText("توضیح اختیاری...")
+        self.note_input.setAlignment(Qt.AlignRight)
+        self.note_input.setMinimumWidth(350) # Increased width
+        self.note_input.setMinimumHeight(100) # Increased height for more space
 
-        self.date_input = QDateTimeEdit(QDateTime.currentDateTime())
-        self.date_input.setDisplayFormat("yyyy-MM-dd HH:mm:ss")
-        self.date_input.setCalendarPopup(True)
+        self.date_input = QLineEdit()
+        now_jalali = jdatetime.datetime.now()
+        self.date_input.setText(now_jalali.strftime('%Y-%m-%d %H:%M:%S'))
+        self.date_input.setPlaceholderText("تاریخ شمسی (مثلاً: 1403-03-16 17:45:00)")
+        self.date_input.setAlignment(Qt.AlignRight)
+        self.date_input.setMinimumWidth(350) # Increased width
 
-        self.now_checkbox = QCheckBox("Use current time")
+        self.now_checkbox = QCheckBox("استفاده از زمان فعلی")
         self.now_checkbox.setChecked(True)
+        self.now_checkbox.setLayoutDirection(Qt.RightToLeft)
         self.date_input.setEnabled(False)
 
-        self.use_market_prices_checkbox = QCheckBox("Use current BTC/Gold prices")
-        self.use_market_prices_checkbox.setChecked(True)
+        self.use_market_price_checkbox = QCheckBox("استفاده از قیمت لحظه‌ای طلا")
+        self.use_market_price_checkbox.setChecked(True)
+        self.use_market_price_checkbox.setLayoutDirection(Qt.RightToLeft)
 
         self.gold_price_input = QDoubleSpinBox()
-        self.gold_price_input.setPrefix("Gold $")
-        self.gold_price_input.setMaximum(100000)
+        self.gold_price_input.setPrefix("قیمت طلا ") # Moved prefix for better RTL flow
+        self.gold_price_input.setMaximum(1000000000) # Increased max value
         self.gold_price_input.setDecimals(2)
         self.gold_price_input.setEnabled(False)
+        self.gold_price_input.setAlignment(Qt.AlignRight)
+        self.gold_price_input.setMinimumWidth(200) # Adjusted width
 
-        self.btc_price_input = QDoubleSpinBox()
-        self.btc_price_input.setPrefix("BTC $")
-        self.btc_price_input.setMaximum(1000000)
-        self.btc_price_input.setDecimals(2)
-        self.btc_price_input.setEnabled(False)
-
-        self.submit_button = QPushButton("Submit")
-        self.status_label = QLabel("")
+        self.submit_button = QPushButton("ثبت تراکنش") # More descriptive text
+        self.status_label = QLabel("اعلانیه")
+        self.status_label.setObjectName("statusLabel") # Set object name for specific CSS targeting
+        self.status_label.setAlignment(Qt.AlignCenter) # Center status messages
+        # Removed inline style, now handled by stylesheet with objectName
 
     def init_layout(self):
-        layout = QVBoxLayout()
+        # Overall main layout to center the content
+        overall_vlayout = QVBoxLayout(self)
+        overall_vlayout.setContentsMargins(0, 0, 0, 0) # No extra margins for overall layout
 
-        # Row 1: Symbol + Type
-        row1 = QHBoxLayout()
-        row1.addWidget(QLabel("Symbol:"))
-        row1.addWidget(self.symbol_input)
-        row1.addWidget(QLabel("Type:"))
-        row1.addWidget(self.type_input)
-        layout.addLayout(row1)
+        # A horizontal layout to push the main content to the center
+        center_hlayout = QHBoxLayout()
+        center_hlayout.addStretch(1) # Pushes content to the right
+        
+        main_content_vlayout = QVBoxLayout()
+        main_content_vlayout.setSpacing(15) # Increased spacing
+        main_content_vlayout.setContentsMargins(30, 30, 30, 30) # Increased margins for the content itself
+        main_content_vlayout.setAlignment(Qt.AlignHCenter | Qt.AlignTop) # Align content horizontally center
 
-        # Row 2: Amount + Price + Unit
-        row2 = QHBoxLayout()
-        row2.addWidget(QLabel("Amount:"))
-        row2.addWidget(self.amount_input)
-        row2.addWidget(QLabel("Price:"))
-        row2.addWidget(self.price_input)
-        row2.addWidget(QLabel("Unit:"))
-        row2.addWidget(self.unit_input)
-        layout.addLayout(row2)
+        # Form layout for inputs
+        form_layout = QFormLayout()
+        form_layout.setLabelAlignment(Qt.AlignRight)
+        form_layout.setFormAlignment(Qt.AlignRight | Qt.AlignTop) # Align form to top for textedit
+        form_layout.setSpacing(12) # Increased spacing in form
+        form_layout.setRowWrapPolicy(QFormLayout.DontWrapRows)
 
-        # Row 3: Manual exchange rate checkbox + value + direction
-        row3 = QHBoxLayout()
-        row3.addWidget(self.manual_dollar_checkbox)
-        row3.addWidget(self.currency_exchange_rate)
-        row3.addWidget(self.exchange_direction)
-        layout.addLayout(row3)
+        # Added QLabel wrappers for better styling consistency
+        form_layout.addRow(QLabel("نماد سهام:"), self.symbol_input)
+        form_layout.addRow(QLabel("نوع تراکنش:"), self.type_input)
+        form_layout.addRow(QLabel("تعداد:"), self.amount_input)
+        form_layout.addRow(QLabel("قیمت واحد:"), self.price_input)
+        form_layout.addRow(QLabel("یادداشت:"), self.note_input)
 
-        # Note input
-        layout.addWidget(QLabel("Note:"))
-        layout.addWidget(self.note_input)
+        # Date input and checkbox in a horizontal layout
+        date_hbox = QHBoxLayout()
+        date_hbox.addWidget(self.date_input)
+        date_hbox.addWidget(self.now_checkbox)
+        date_hbox.addStretch(1) # Pushes the checkbox and input to the right
+        date_hbox.setAlignment(Qt.AlignRight)
+        form_layout.addRow(QLabel("تاریخ:"), date_hbox)
 
-        # Row 4: Date picker + checkbox
-        row4 = QHBoxLayout()
-        row4.addWidget(QLabel("Date:"))
-        row4.addWidget(self.date_input)
-        row4.addWidget(self.now_checkbox)
-        layout.addLayout(row4)
+        # Gold price section in a horizontal layout
+        gold_layout = QHBoxLayout()
+        gold_layout.addWidget(self.gold_price_input)
+        gold_layout.addWidget(self.use_market_price_checkbox)
+        gold_layout.addStretch(1) # Pushes content to the right
+        gold_layout.setAlignment(Qt.AlignRight)
 
-        # Row 5: BTC + Gold prices + checkbox
-        row5 = QHBoxLayout()
-        row5.addWidget(self.use_market_prices_checkbox)
-        row5.addWidget(self.gold_price_input)
-        row5.addWidget(self.btc_price_input)
-        layout.addLayout(row5)
 
-        # Submission and status
-        layout.addWidget(self.submit_button)
-        layout.addWidget(self.status_label)
+        # Add a separator line (optional, but good for visual separation)
+        separator = QFrame()
+        separator.setFrameShape(QFrame.HLine)
+        separator.setFrameShadow(QFrame.Sunken)
+        separator.setStyleSheet("color: #E0E0E0;") # Lighter separator color
 
-        self.setLayout(layout)
+        # Add form layout and other widgets to the main content layout
+        main_content_vlayout.addLayout(form_layout)
+        main_content_vlayout.addSpacing(15) # Spacing before gold section
+        main_content_vlayout.addLayout(gold_layout)
+        main_content_vlayout.addSpacing(20) # Spacing before button
+
+        # Button and status in their own vertical sub-layout to place status below button
+        button_and_status_vlayout = QVBoxLayout()
+        button_and_status_vlayout.setAlignment(Qt.AlignHCenter) # Center the button and status horizontally
+        button_and_status_vlayout.addWidget(self.submit_button)
+        button_and_status_vlayout.addWidget(self.status_label)
+        
+        main_content_vlayout.addLayout(button_and_status_vlayout)
+        main_content_vlayout.addStretch(1) # Pushes content to top
+
+        center_hlayout.addLayout(main_content_vlayout)
+        center_hlayout.addStretch(1) # Pushes content to the left (balancing the first stretch)
+
+        overall_vlayout.addLayout(center_hlayout)
+        overall_vlayout.addStretch(1) # Pushes content to the top (vertically centering)
+
+        self.setLayout(overall_vlayout)
+
 
     def init_connections(self):
         self.now_checkbox.stateChanged.connect(self.toggle_date_input)
-        self.use_market_prices_checkbox.stateChanged.connect(self.toggle_price_inputs)
-        self.manual_dollar_checkbox.stateChanged.connect(self.toggle_exchange_inputs)
+        self.use_market_price_checkbox.stateChanged.connect(self.toggle_price_inputs)
         self.submit_button.clicked.connect(self.submitted.emit)
 
     def toggle_date_input(self, state):
         self.date_input.setEnabled(not state)
+        if state:
+            self.date_input.setText(jdatetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
     def toggle_price_inputs(self, state):
-        manual = not state
-        self.gold_price_input.setEnabled(manual)
-        self.btc_price_input.setEnabled(manual)
-
-    def toggle_exchange_inputs(self, state):
-        enabled = state == 2
-        self.currency_exchange_rate.setEnabled(enabled)
-        self.exchange_direction.setEnabled(enabled)
-
-    def get_form_data(self):
-        symbol = self.symbol_input.text().strip().upper()
-        asset_id = get_asset_id_by_symbol(symbol)
-
-        # Normalize exchange rate
-        rate_value = self.currency_exchange_rate.value()
-        direction = self.exchange_direction.currentText()
-        normalized_rate = (
-            rate_value if direction == "1 unit = $X"
-            else (1 / rate_value if rate_value != 0 else 0)
-        )
-
-        return {
-            "asset_id": asset_id,
-            "type": self.type_input.currentText(),
-            "amount": self.amount_input.text().strip(),
-            "price": self.price_input.text().strip(),
-            "unit": self.unit_input.currentText(),
-            "note": self.note_input.toPlainText().strip(),
-            "datetime": QDateTime.currentDateTime() if self.now_checkbox.isChecked()
-                        else self.date_input.dateTime(),
-            "use_market_prices": self.use_market_prices_checkbox.isChecked(),
-            "gold_price": self.gold_price_input.value(),
-            "btc_price": self.btc_price_input.value(),
-            "manual_dollar": self.manual_dollar_checkbox.isChecked(),
-            "currency_exchange_rate": normalized_rate
-        }
+        self.gold_price_input.setEnabled(not state)
+        self.price_input.setEnabled(state) # Enable price_input when not using market price
 
     def update_symbol_completer(self, symbols: List[str]):
         self.symbol_model.setStringList(symbols)

@@ -1,92 +1,246 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem
-from database.db_utils import get_symbol_by_asset_id
+from PyQt5.QtWidgets import (
+    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget,
+    QTableWidgetItem, QLabel, QLineEdit, QHeaderView, QFrame,
+    QBoxLayout # Explicitly import QBoxLayout for clarity
+)
+from PyQt5.QtCore import Qt # Import Qt for alignment and direction
+from typing import List, Any # For type hinting
+
+# Assuming Asset model exists and is correctly imported
+from models.asset import Asset # This import is crucial for your original logic
+
 
 class InsightsView(QWidget):
+    """
+    Provides an interface to view and analyze transaction insights,
+    including currency conversion, sorting, and a detailed transaction table.
+    """
     def __init__(self):
         super().__init__()
+        self.setLayoutDirection(Qt.RightToLeft) # Set layout direction for the widget
+        self.setStyleSheet("""
+            QWidget {
+                background-color: #F8F8F8;
+                font-family: "Segoe UI", "Tahoma", "Arial", "B Nazanin", "IRANSans";
+                font-size: 10pt;
+                color: #333333;
+            }
+            QLabel {
+                font-weight: bold;
+                color: #4A4A4A;
+                padding: 5px 0;
+            }
+            QLineEdit {
+                border: 1px solid #CCCCCC;
+                border-radius: 5px;
+                padding: 8px;
+                background-color: #FFFFFF;
+                color: #333333;
+                min-width: 150px; /* Adjust width as needed */
+            }
+            QPushButton {
+                background-color: #007ACC;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                padding: 10px 15px;
+                font-weight: bold;
+                min-width: 120px;
+            }
+            QPushButton:hover {
+                background-color: #005F99;
+            }
+            QPushButton:pressed {
+                background-color: #004C80;
+            }
+            /* Styling for sorting buttons specifically */
+            QPushButton.SortButton { /* Using a class-like selector */
+                background-color: #6C757D; /* Grey background for sorting buttons */
+                color: white;
+                padding: 8px 12px;
+                font-size: 9pt;
+                min-width: 100px;
+            }
+            QPushButton.SortButton:hover {
+                background-color: #5A6268;
+            }
+            QPushButton.SortButton:pressed {
+                background-color: #495057;
+            }
+            QTableWidget {
+                background-color: #FFFFFF;
+                border: 1px solid #E0E0E0;
+                border-radius: 8px;
+                gridline-color: #EEEEEE; /* Lighter grid lines */
+                font-size: 9pt;
+            }
+            QHeaderView::section {
+                background-color: #E0E5EC; /* Header background color */
+                color: #333333;
+                padding: 8px;
+                border: 1px solid #D1D5DA;
+                font-weight: bold;
+                font-size: 9pt;
+                text-align: right; /* Align header text to right for RTL */
+            }
+            QTableWidget::item {
+                padding: 5px;
+                text-align: right; /* Align item text to right for RTL */
+            }
+            QTableWidget::item:selected {
+                background-color: #B0D9FF; /* Light blue on selection */
+                color: #333333;
+            }
+        """)
 
-        layout = QVBoxLayout()
+        self._setup_ui() # Encapsulate UI setup
+        self._setup_connections() # Encapsulate connections
 
-        # IRR input and Calculate Gains button
-        irr_layout = QHBoxLayout()
+    def _setup_ui(self):
+        """Sets up the layout and widgets for the InsightsView."""
+        main_layout = QVBoxLayout(self)
+        main_layout.setSpacing(15) # Increased spacing between sections
+        main_layout.setContentsMargins(20, 20, 20, 20) # Margins around the view
 
-        from PyQt5.QtWidgets import QLabel, QLineEdit
+        # --- IRR (USD to IRR) Conversion Section ---
+        irr_section_layout = QHBoxLayout()
+        irr_section_layout.setAlignment(Qt.AlignRight) # Align content to the right
+        irr_section_layout.setSpacing(10)
 
-        self.irr_label = QLabel("USD to IRR:")
+        self.irr_label = QLabel("نرخ دلار به ریال (USD/IRR):")
         self.irr_input = QLineEdit()
-        self.irr_input.setPlaceholderText("e.g., 800000")
+        self.irr_input.setPlaceholderText("مثال: 800,000") # Persian example
+        self.irr_input.setAlignment(Qt.AlignRight) # Align input text to right
 
-        self.calculate_gains_btn = QPushButton("Calculate Gains")
+        self.calculate_gains_btn = QPushButton("محاسبه سود") # Persian label
+        self.calculate_gains_btn.setObjectName("CalculateButton") # Specific name for potential future styling
 
-        irr_layout.addWidget(self.irr_label)
-        irr_layout.addWidget(self.irr_input)
-        irr_layout.addWidget(self.calculate_gains_btn)
-        irr_layout.addStretch()
+        irr_section_layout.addWidget(self.calculate_gains_btn) # Button on the left in RTL
+        irr_section_layout.addWidget(self.irr_input)
+        irr_section_layout.addWidget(self.irr_label)
+        irr_section_layout.addStretch(1) # Pushes content to the right
 
-        layout.addLayout(irr_layout)
+        main_layout.addLayout(irr_section_layout)
 
-        # Sorting buttons
+        # --- Separator below IRR section ---
+        separator_irr = QFrame()
+        separator_irr.setFrameShape(QFrame.HLine)
+        separator_irr.setFrameShadow(QFrame.Sunken)
+        separator_irr.setStyleSheet("color: #E0E0E0;")
+        main_layout.addWidget(separator_irr)
+
+
+        # --- Sorting Buttons Section ---
+        sorting_buttons_vlayout = QVBoxLayout()
+        sorting_buttons_vlayout.setSpacing(8) # Spacing between rows of buttons
+        sorting_buttons_vlayout.setAlignment(Qt.AlignRight) # Align button groups to the right
+
+        # Row 1 of sorting buttons
         button_layout_1 = QHBoxLayout()
-        self.most_asset_btn = QPushButton("Most Asset Gain")
-        self.most_btc_btn = QPushButton("Most BTC Gain")
-        self.most_gold_btn = QPushButton("Most Gold Gain")
-        self.date_desc_btn = QPushButton("Date Descending")
+        button_layout_1.setSpacing(10)
+        button_layout_1.setAlignment(Qt.AlignRight) # Align buttons within the row to the right
 
+        self.most_asset_btn = QPushButton("بیشترین سود ریالی") # Persian label
+        self.most_asset_btn.setProperty("class", "SortButton") # Custom property for CSS
+        self.most_gold_btn = QPushButton("بیشترین سود دلاری") # Persian label
+        self.most_gold_btn.setProperty("class", "SortButton")
+        self.date_desc_btn = QPushButton("تاریخ نزولی") # Persian label
+        self.date_desc_btn.setProperty("class", "SortButton")
+
+        button_layout_1.addWidget(self.date_desc_btn)
+        button_layout_1.addWidget(self.most_gold_btn)
+        button_layout_1.addWidget(self.most_asset_btn)
+        button_layout_1.addStretch(1) # Pushes buttons to the right
+
+        # Row 2 of sorting buttons
         button_layout_2 = QHBoxLayout()
-        self.least_asset_btn = QPushButton("Least Asset Gain")
-        self.least_btc_btn = QPushButton("Least BTC Gain")
-        self.least_gold_btn = QPushButton("Least Gold Gain")
-        self.date_asc_btn = QPushButton("Date Ascending")
+        button_layout_2.setSpacing(10)
+        button_layout_2.setAlignment(Qt.AlignRight) # Align buttons within the row to the right
 
-        for btn in [
-            self.most_asset_btn, self.most_btc_btn,
-            self.most_gold_btn, self.date_desc_btn
-        ]:
-            button_layout_1.addWidget(btn)
+        self.least_asset_btn = QPushButton("کمترین سود ریالی") # Persian label
+        self.least_asset_btn.setProperty("class", "SortButton")
+        self.least_gold_btn = QPushButton("کمترین سود دلاری") # Persian label
+        self.least_gold_btn.setProperty("class", "SortButton")
+        self.date_asc_btn = QPushButton("تاریخ صعودی") # Persian label
+        self.date_asc_btn.setProperty("class", "SortButton")
 
-        for btn in [
-            self.least_asset_btn, self.least_btc_btn,
-            self.least_gold_btn, self.date_asc_btn
-        ]:
-            button_layout_2.addWidget(btn)
+        button_layout_2.addWidget(self.date_asc_btn)
+        button_layout_2.addWidget(self.least_gold_btn)
+        button_layout_2.addWidget(self.least_asset_btn)
+        button_layout_2.addStretch(1) # Pushes buttons to the right
 
-        button_layout = QVBoxLayout()
+        sorting_buttons_vlayout.addLayout(button_layout_1)
+        sorting_buttons_vlayout.addLayout(button_layout_2)
+        
+        main_layout.addLayout(sorting_buttons_vlayout)
 
-        button_layout.addLayout(button_layout_1)
-        button_layout.addLayout(button_layout_2)
+        # --- Separator below Sorting buttons ---
+        separator_sort = QFrame()
+        separator_sort.setFrameShape(QFrame.HLine)
+        separator_sort.setFrameShadow(QFrame.Sunken)
+        separator_sort.setStyleSheet("color: #E0E0E0;")
+        main_layout.addWidget(separator_sort)
 
-        layout.addLayout(button_layout)
-
-        # Table
+        # --- Transactions Table ---
         self.table = QTableWidget()
-        self.table.setColumnCount(15)
+        self.table.setColumnCount(10)
+        
+        # Set Persian Horizontal Header Labels
         self.table.setHorizontalHeaderLabels([
-            "Asset", "Type", "Amount", "Price per Unit",
-            "Unit", "Currency Exchange Rate", "Total", "Dollar Total",
-            "Gold Price", "BTC Price", "Note",
-            "Gain", "BTC Gain", "Gold Gain", "DateTime"
+            "نماد", "نوع", "تعداد", "قیمت واحد", "جمع کل",
+            "قیمت طلا", "یادداشت",
+            "سود ریالی", "سود دلاری", "تاریخ و زمان"
         ])
-        layout.addWidget(self.table)
 
-        self.setLayout(layout)
+        # Adjust header behavior: Stretch last section, enable sorting click
+        header = self.table.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.Stretch) # Make columns fill available space
+        header.setStretchLastSection(True) # Ensure the last column stretches to fill
+        header.setDefaultAlignment(Qt.AlignRight) # Default alignment for headers
+        
+        self.table.verticalHeader().setVisible(False) # Hide vertical header (row numbers)
+        self.table.setAlternatingRowColors(True) # Enable alternating row colors for readability
+        self.table.setSelectionBehavior(QTableWidget.SelectRows) # Select entire rows
+        self.table.setEditTriggers(QTableWidget.NoEditTriggers) # Make table read-only
 
-    def update_table(self, transactions):
+        main_layout.addWidget(self.table)
+    
+    def _setup_connections(self):
+        """Sets up connections for buttons (implementation will be in controller)."""
+        # Connect buttons to placeholder methods or signals to be handled by controller
+        self.calculate_gains_btn.clicked.connect(lambda: print("Calculate Gains clicked"))
+        self.most_asset_btn.clicked.connect(lambda: print("Most Asset Gain clicked"))
+        self.most_gold_btn.clicked.connect(lambda: print("Most Gold Gain clicked"))
+        self.date_desc_btn.clicked.connect(lambda: print("Date Descending clicked"))
+        self.least_asset_btn.clicked.connect(lambda: print("Least Asset Gain clicked"))
+        self.least_gold_btn.clicked.connect(lambda: print("Least Gold Gain clicked"))
+        self.date_asc_btn.clicked.connect(lambda: print("Date Ascending clicked"))
+
+
+    def update_table(self, transactions: List[Any]): # Use Any if 'tx' is not a specific type yet
+        """
+        Populates the table with transaction data.
+        Assumes 'transactions' is a list of objects with attributes like tx.amount, tx.price_per_unit, etc.
+        """
         self.table.setRowCount(len(transactions))
         for row, tx in enumerate(transactions):
             total_value = tx.amount * tx.price_per_unit
-            dollar_total_value = total_value * tx.currency_exchange_rate
-            self.table.setItem(row, 0, QTableWidgetItem(get_symbol_by_asset_id(tx.asset_id)))
+            # Ensure Asset.get_by_id is correctly implemented in your models
+            asset_symbol = Asset.get_by_id(tx.asset_id).symbol if hasattr(tx, 'asset_id') and Asset else "N/A"
+
+            self.table.setItem(row, 0, QTableWidgetItem(asset_symbol))
             self.table.setItem(row, 1, QTableWidgetItem(tx.type))
             self.table.setItem(row, 2, QTableWidgetItem(f"{tx.amount:.5f}"))
             self.table.setItem(row, 3, QTableWidgetItem(f"{tx.price_per_unit:.2f}"))
-            self.table.setItem(row, 4, QTableWidgetItem(tx.unit))
-            self.table.setItem(row, 5, QTableWidgetItem(f"{tx.currency_exchange_rate:.2f}"))
-            self.table.setItem(row, 6, QTableWidgetItem(f"{total_value:.2f}"))
-            self.table.setItem(row, 7, QTableWidgetItem(f"{dollar_total_value:.2f}"))
-            self.table.setItem(row, 8, QTableWidgetItem(f"{tx.gold_price:.2f}"))
-            self.table.setItem(row, 9, QTableWidgetItem(f"{tx.btc_price:.2f}"))
-            self.table.setItem(row, 10, QTableWidgetItem(tx.note))
-            self.table.setItem(row, 11, QTableWidgetItem(f"{tx.gain:.2f}"))
-            self.table.setItem(row, 12, QTableWidgetItem(f"{tx.btc_gain:.6f}"))
-            self.table.setItem(row, 13, QTableWidgetItem(f"{tx.gold_gain:.6f}"))
-            self.table.setItem(row, 14, QTableWidgetItem(str(tx.timestamp)))
+            self.table.setItem(row, 4, QTableWidgetItem(f"{total_value:.2f}"))
+            self.table.setItem(row, 5, QTableWidgetItem(f"{tx.gold_price:.2f}"))
+            self.table.setItem(row, 6, QTableWidgetItem(tx.note))
+            self.table.setItem(row, 7, QTableWidgetItem(f"{tx.gain:.2f}"))
+            self.table.setItem(row, 8, QTableWidgetItem(f"{tx.gold_gain:.6f}"))
+            self.table.setItem(row, 9, QTableWidgetItem(str(tx.timestamp)))
+
+            # Align content of each cell to the right
+            for col in range(self.table.columnCount()):
+                item = self.table.item(row, col)
+                if item:
+                    item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
