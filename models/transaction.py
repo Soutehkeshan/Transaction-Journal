@@ -2,7 +2,7 @@ from database.db_utils import get_db_connection
 
 class Transaction:
     def __init__(self, asset_id, type, amount, price_per_unit,
-                 gold_price, dollar_price, timestamp, note="", id=None, gold_gain=0, gain=0):
+                 gold_price, dollar_price, timestamp, note="", id=None):
         self.id = id
         self.asset_id = asset_id
         self.type = type
@@ -13,19 +13,17 @@ class Transaction:
         self.dollar_price = dollar_price
         self.timestamp = timestamp
         self.note = note
-        self.gold_gain = gold_gain
-        self.gain = gain
 
     def save(self):
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("""
                         INSERT INTO transactions (asset_id, type, amount, price_per_unit,
-                        gold_price, dollar_price, timestamp, note, gold_gain, gain)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        gold_price, dollar_price, timestamp, note)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                         """, (
                             self.asset_id, self.type, self.amount, self.price_per_unit,
-                            self.gold_price, self.dollar_price, self.timestamp, self.note, 0, 0
+                            self.gold_price, self.dollar_price, self.timestamp, self.note
                             ))
         self.id = cursor.lastrowid
         conn.commit()
@@ -90,8 +88,6 @@ class Transaction:
             dollar_price=row[6],
             timestamp=row[7],
             note=row[8],
-            gold_gain=row[9],
-            gain=row[10]
         )
 
     def __repr__(self):
