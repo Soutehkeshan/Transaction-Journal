@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 from typing import List, Any
 from models.asset import Asset
+from models.gain import Gain
 
 class InsightsView(QWidget):
     """
@@ -90,7 +91,6 @@ class InsightsView(QWidget):
         """)
 
         self._setup_ui() # Encapsulate UI setup
-        self._setup_connections() # Encapsulate connections
 
     def _setup_ui(self):
         """Sets up the layout and widgets for the InsightsView."""
@@ -140,13 +140,13 @@ class InsightsView(QWidget):
 
         # --- Transactions Table ---
         self.table = QTableWidget()
-        self.table.setColumnCount(11)
+        self.table.setColumnCount(12)
         
         # Set Persian Horizontal Header Labels
         self.table.setHorizontalHeaderLabels([
             "نماد", "نوع", "تعداد", "قیمت واحد", "جمع کل",
             "قیمت طلا", "قیمت دلار", "یادداشت",
-            "سود ریالی", "سود دلاری", "تاریخ و زمان"
+            "سود ریالی", "سود دلاری", "سود طلایی", "تاریخ و زمان"
         ])
 
         # Adjust header behavior: Stretch last section, enable sorting click
@@ -163,10 +163,9 @@ class InsightsView(QWidget):
 
         main_layout.addWidget(self.table)
 
-    def update_table(self, transactions: List[Any]): # Use Any if 'tx' is not a specific type yet
+    def update_table(self, transactions: List[Any]):  # Use Any if 'tx' is not a specific type yet
         """
-        Populates the table with transaction data.
-        Assumes 'transactions' is a list of objects with attributes like tx.amount, tx.price_per_unit, etc.
+        Populates the table with transaction data and associated gains from the gains table.
         """
         self.table.setRowCount(len(transactions))
         for row, tx in enumerate(transactions):
@@ -174,17 +173,25 @@ class InsightsView(QWidget):
             # Ensure Asset.get_by_id is correctly implemented in your models
             asset_symbol = Asset.get_by_id(tx.asset_id).symbol if hasattr(tx, 'asset_id') and Asset else "N/A"
 
+            # Retrieve associated gain using the Gain model
+            gain = Gain.get_by_transaction_id(tx.id)
+
+            irr_gain = gain.irr_gain if gain else 0
+            usd_gain = gain.usd_gain if gain else 0
+            gold_gain = gain.gold_gain if gain else 0
+
             self.table.setItem(row, 0, QTableWidgetItem(asset_symbol))
             self.table.setItem(row, 1, QTableWidgetItem(tx.type))
             self.table.setItem(row, 2, QTableWidgetItem(f"{tx.amount:.5f}"))
             self.table.setItem(row, 3, QTableWidgetItem(f"{tx.price_per_unit:.2f}"))
             self.table.setItem(row, 4, QTableWidgetItem(f"{total_value:.2f}"))
-            self.table.setItem(row, 5, QTableWidgetItem(f"{tx.gold_price}"))
-            self.table.setItem(row, 6, QTableWidgetItem(f"{tx.dollar_price}"))
+            self.table.setItem(row, 5, QTableWidgetItem(f"{tx.gold_price:.2f}"))
+            self.table.setItem(row, 6, QTableWidgetItem(f"{tx.dollar_price:.2f}"))
             self.table.setItem(row, 7, QTableWidgetItem(tx.note))
-            self.table.setItem(row, 8, QTableWidgetItem(f"{tx.gain:.2f}"))
-            self.table.setItem(row, 9, QTableWidgetItem(f"{tx.gold_gain:.6f}"))
-            self.table.setItem(row, 10, QTableWidgetItem(str(tx.timestamp)))
+            self.table.setItem(row, 8, QTableWidgetItem(f"{irr_gain:.2f}"))
+            self.table.setItem(row, 9, QTableWidgetItem(f"{usd_gain:.2f}"))
+            self.table.setItem(row, 10, QTableWidgetItem(f"{gold_gain:.6f}"))
+            self.table.setItem(row, 11, QTableWidgetItem(str(tx.timestamp)))
 
             # Align content of each cell to the right
             for col in range(self.table.columnCount()):

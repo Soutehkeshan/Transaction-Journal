@@ -17,6 +17,7 @@ class InsightsController(QObject):
 
     def calculate_gains(self):
         latest_gold_price = fetch_gold_price()
+        latest_dollar_price = float(self.view.irr_input.text()) if self.view.irr_input.text() else 0
 
         for tx in Transaction.get_all():
             asset = Asset.get_by_id(tx.asset_id)
@@ -27,10 +28,7 @@ class InsightsController(QObject):
             latest_asset_price = fetch_price(asset)
 
             tx_type = tx.type  # "buy" or "sell"
-            tx.calculate_gains(tx.price_per_unit, latest_asset_price, latest_gold_price, tx_type)
-            tx.save()
-
-        print("Gains calculated and saved.")
+            tx.calculate_gains(latest_asset_price, latest_dollar_price, latest_gold_price, tx_type)
 
     def sort_and_display(self, key, reverse):
         transactions = Transaction.get_all()

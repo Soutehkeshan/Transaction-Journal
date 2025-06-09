@@ -1,4 +1,5 @@
 from database.db_utils import get_db_connection
+from models.gain import Gain
 
 class Transaction:
     def __init__(self, asset_id, type, amount, price_per_unit,
@@ -39,24 +40,38 @@ class Transaction:
         conn.close()
         self.id = None
 
-    def calculate_gains(self, original_price, latest_price, latest_gold_price, tx_type):
-        if not original_price or not latest_price:
-            self.gain = 0
+    def calculate_gains(self, latest_price, latest_dollar_price, latest_gold_price, tx_type):
+        if not latest_price:
+            irr_gain = 0
         else:
-            self.gain = (
-                latest_price / original_price if tx_type == "خرید"
-                else original_price / latest_price
+            irr_gain = (
+                latest_price / self.price_per_unit if tx_type == "خرید"
+                else self.price_per_unit / latest_price
             )
+
+        # Dollar-relative gain
+        if latest_dollar_price and self.dollar_price:
+            dollar_gain = (
+                irr_gain * (self.dollar_price / latest_dollar_price)
+                if tx_type == "خرید"
+                else irr_gain * (latest_dollar_price / self.dollar_price)
+            )
+        else:
+            dollar_gain = 0
 
         # Gold-relative gain
         if latest_gold_price and self.gold_price:
-            self.gold_gain = (
-                self.gain * (self.gold_price / latest_gold_price)
+            gold_gain = (
+                irr_gain * (self.gold_price / latest_gold_price)
                 if tx_type == "خرید"
-                else self.gain * (latest_gold_price / self.gold_price)
+                else irr_gain * (latest_gold_price / self.gold_price)
             )
         else:
-            self.gold_gain = 0
+            gold_gain = 0
+
+        # Save gains in the gains table using the Gain model
+        gain = Gain(transaction_id=self.id, irr_gain=irr_gain, usd_gain=dollar_gain, gold_gain=gold_gain)
+        gain.save_or_update()
 
     @classmethod
     def get_by_id(cls, id):

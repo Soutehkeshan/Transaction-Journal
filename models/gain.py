@@ -8,30 +8,28 @@ class Gain:
         self.usd_gain           = usd_gain
         self.gold_gain          = gold_gain
 
-    def save(self):
+    def save_or_update(self):
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("""
-                       INSERT INTO gains (transaction_id,
-                       irr_gain, usd_gain, gold_gain)
-                       VALUES (?, ?, ?, ?, ?)
-                       """, (self.transaction_id, self.irr_gain,
-                             self.usd_gain, self.gold_gain,))
-        self.id = cursor.lastrowid
-        conn.commit()
-        conn.close()
 
-    def update(self):
         if self.id is None:
-            raise ValueError("Cannot update Gain: id is None. Did you mean to call save()?")
+            # Perform INSERT operation
+            cursor.execute("""
+                           INSERT INTO gains (transaction_id,
+                           irr_gain, usd_gain, gold_gain)
+                           VALUES (?, ?, ?, ?)
+                           """, (self.transaction_id, self.irr_gain,
+                                 self.usd_gain, self.gold_gain))
+            self.id = cursor.lastrowid
+        else:
+            # Perform UPDATE operation
+            cursor.execute("""
+                           UPDATE gains
+                           SET transaction_id = ?, irr_gain = ?, usd_gain = ?, gold_gain = ?
+                           WHERE id = ?
+                           """, (self.transaction_id, self.irr_gain,
+                                 self.usd_gain, self.gold_gain, self.id))
 
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-                       UPDATE gains
-                       SET transaction_id = ?, irr_gain = ?, usd_gain = ?, gold_gain = ?
-                       WHERE id = ?
-                       """, (self.transaction_id, self.irr_gain, self.usd_gain, self.gold_gain, self.id))
         conn.commit()
         conn.close()
 
