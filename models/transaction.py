@@ -70,8 +70,17 @@ class Transaction:
             gold_gain = 0
 
         # Save gains in the gains table using the Gain model
-        gain = Gain(transaction_id=self.id, irr_gain=irr_gain, usd_gain=dollar_gain, gold_gain=gold_gain)
-        gain.save_or_update()
+        existing_gain = Gain.get_by_transaction_id(self.id)
+        if existing_gain:
+            # Update existing gain
+            existing_gain.irr_gain = irr_gain
+            existing_gain.usd_gain = dollar_gain
+            existing_gain.gold_gain = gold_gain
+            existing_gain.save_or_update()
+        else:
+            # Create new gain
+            gain = Gain(transaction_id=self.id, irr_gain=irr_gain, usd_gain=dollar_gain, gold_gain=gold_gain)
+            gain.save_or_update()
 
     @classmethod
     def get_by_id(cls, id):
