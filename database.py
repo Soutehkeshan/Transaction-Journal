@@ -17,27 +17,35 @@ def init_db():
     cursor = conn.cursor()
 
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS assets (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        symbol TEXT UNIQUE
-    );""")
+                   CREATE TABLE IF NOT EXISTS assets (
+                   id INTEGER PRIMARY KEY AUTOINCREMENT,
+                   symbol TEXT UNIQUE
+                   );""")
 
 
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS transactions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        asset_id INTEGER,
-        type TEXT CHECK(type IN ('خرید', 'فروش')),
-        amount REAL,
-        price_per_unit REAL,
-        gold_price REAL,
-        dollar_price REAL,
-        timestamp TEXT,
-        note TEXT,
-        gold_gain REAL,
-        gain REAL,
-        FOREIGN KEY (asset_id) REFERENCES assets(id)
-    )""")
+                   CREATE TABLE IF NOT EXISTS transactions (
+                   id INTEGER PRIMARY KEY AUTOINCREMENT,
+                   asset_id INTEGER,
+                   type TEXT CHECK(type IN ('خرید', 'فروش')),
+                   amount REAL,
+                   price_per_unit REAL,
+                   gold_price REAL,
+                   dollar_price REAL,
+                   timestamp TEXT,
+                   note TEXT,
+                   FOREIGN KEY (asset_id) REFERENCES assets(id)
+                   )""")
+
+    cursor.execute("""
+                   CREATE TABLE IF NOT EXISTS gains (
+                   id INTEGER PRIMARY KEY AUTOINCREMENT,
+                   transaction_id INTEGER,
+                   irr_gain REAL,
+                   usd_gain REAL,
+                   gold_gain REAL,
+                   FOREIGN KEY (transaction_id) REFERENCES transactions(id)
+                   )""")
 
     conn.commit()
     conn.close()
