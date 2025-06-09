@@ -1,7 +1,5 @@
-from datetime import datetime
-
 import jdatetime
-from data_fetcher import fetch_gold_price, fetch_price
+from data_fetcher import fetch_gold_price
 from models.transaction import Transaction
 from models.asset import Asset
 
@@ -25,7 +23,7 @@ class TransactionEntryController:
             
             asset_id = Asset.get_by_symbol(symbol).id
 
-            tx_type = "buy" if self.view.type_input.currentText() == "خرید" else "sell"
+            tx_type = self.view.type_input.currentText()
             amount = float(self.view.amount_input.text())
             price = float(self.view.price_input.text())
 
@@ -42,9 +40,11 @@ class TransactionEntryController:
             else:
                 gold_price = self.view.gold_price_input.value()
 
+            dollar_price = self.view.dollar_price_input.value()
+
             note = self.view.note_input.toPlainText().strip()
 
-            transaction = Transaction(asset_id, tx_type, amount, price, gold_price, timestamp, note)
+            transaction = Transaction(asset_id, tx_type, amount, price, gold_price, dollar_price, timestamp, note)
             transaction.save()
             self.view.status_label.setText("✅ Transaction added successfully!")
 
