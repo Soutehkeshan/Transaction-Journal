@@ -1,12 +1,11 @@
 from PyQt5.QtWidgets import (
     QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout,
-    QComboBox, QTextEdit, QCompleter, QCheckBox, QDoubleSpinBox, QFormLayout, QBoxLayout,
-    QFrame, QApplication
+    QComboBox, QTextEdit, QCompleter, QCheckBox, QDoubleSpinBox, QFormLayout,
+    QFrame
 )
 from PyQt5.QtCore import QStringListModel, pyqtSignal, Qt
 import jdatetime
 from typing import List
-import sys
 
 class TransactionEntryView(QWidget):
     submitted = pyqtSignal()

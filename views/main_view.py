@@ -1,34 +1,10 @@
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QPushButton, QHBoxLayout,
-    QStackedWidget, QApplication, QFrame, QLabel # Added QLabel for mock views
+    QStackedWidget, QFrame
 )
 from PyQt5.QtCore import Qt
-import sys
-
-# Assuming these views exist in the 'views' directory
-# (These imports are only for the example usage block at the bottom)
-try:
-    from views.transaction_entry_view import TransactionEntryView
-    from views.insights_view import InsightsView
-except ImportError:
-    # Placeholder views if the actual view files are not found
-    class TransactionEntryView(QWidget):
-        def __init__(self):
-            super().__init__()
-            layout = QVBoxLayout(self)
-            layout.addWidget(QLabel("This is the Transaction Entry View"))
-            self.setLayoutDirection(Qt.RightToLeft)
-            # Add a basic style for this placeholder to distinguish
-            self.setStyleSheet("background-color: #F8F8F8; border: 1px solid #CCC; margin: 10px; padding: 20px;")
-            
-    class InsightsView(QWidget):
-        def __init__(self):
-            super().__init__()
-            layout = QVBoxLayout(self)
-            layout.addWidget(QLabel("This is the Insights View"))
-            self.setLayoutDirection(Qt.RightToLeft)
-            # Add a basic style for this placeholder to distinguish
-            self.setStyleSheet("background-color: #F0F0F0; border: 1px solid #AAA; margin: 10px; padding: 20px;")
+from views.transaction_entry_view import TransactionEntryView
+from views.insights_view import InsightsView
 
 
 class MainView(QMainWindow):
