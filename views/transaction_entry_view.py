@@ -159,12 +159,15 @@ class TransactionEntryView(QWidget):
         self.use_market_price_checkbox.setLayoutDirection(Qt.RightToLeft)
 
         self.gold_price_input = QDoubleSpinBox()
-        self.gold_price_input.setPrefix("قیمت طلا ") # Moved prefix for better RTL flow
         self.gold_price_input.setMaximum(1000000000) # Increased max value
-        self.gold_price_input.setDecimals(2)
         self.gold_price_input.setEnabled(False)
         self.gold_price_input.setAlignment(Qt.AlignRight)
-        self.gold_price_input.setMinimumWidth(200) # Adjusted width
+        self.gold_price_input.setMinimumWidth(350) # Adjusted width
+
+        self.dollar_price_input = QDoubleSpinBox()
+        self.dollar_price_input.setMaximum(1000000000) # Increased max value
+        self.dollar_price_input.setAlignment(Qt.AlignRight)
+        self.dollar_price_input.setMinimumWidth(350) # Adjusted width
 
         self.submit_button = QPushButton("ثبت تراکنش") # More descriptive text
         self.status_label = QLabel("اعلانیه")
@@ -209,12 +212,19 @@ class TransactionEntryView(QWidget):
         form_layout.addRow(QLabel("تاریخ:"), date_hbox)
 
         # Gold price section in a horizontal layout
-        gold_layout = QHBoxLayout()
-        gold_layout.addWidget(self.gold_price_input)
-        gold_layout.addWidget(self.use_market_price_checkbox)
-        gold_layout.addStretch(1) # Pushes content to the right
-        gold_layout.setAlignment(Qt.AlignRight)
+        gold_hbox = QHBoxLayout()
+        gold_hbox.addWidget(self.gold_price_input)
+        gold_hbox.addWidget(self.use_market_price_checkbox)
+        gold_hbox.addStretch(1)
+        gold_hbox.setAlignment(Qt.AlignRight)
+        form_layout.addRow(QLabel("قیمت طلا:"), gold_hbox)
 
+        # Dollar price section in a horizontal layout
+        dollar_hbox = QHBoxLayout()
+        dollar_hbox.addWidget(self.dollar_price_input)
+        dollar_hbox.addStretch(1)
+        dollar_hbox.setAlignment(Qt.AlignRight)
+        form_layout.addRow(QLabel("قیمت دلار:"), dollar_hbox)
 
         # Add a separator line (optional, but good for visual separation)
         separator = QFrame()
@@ -224,9 +234,7 @@ class TransactionEntryView(QWidget):
 
         # Add form layout and other widgets to the main content layout
         main_content_vlayout.addLayout(form_layout)
-        main_content_vlayout.addSpacing(15) # Spacing before gold section
-        main_content_vlayout.addLayout(gold_layout)
-        main_content_vlayout.addSpacing(20) # Spacing before button
+        main_content_vlayout.addSpacing(15)
 
         # Button and status in their own vertical sub-layout to place status below button
         button_and_status_vlayout = QVBoxLayout()
