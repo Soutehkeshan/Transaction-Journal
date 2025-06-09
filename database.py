@@ -27,10 +27,11 @@ def init_db():
     CREATE TABLE IF NOT EXISTS transactions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         asset_id INTEGER,
-        type TEXT CHECK(type IN ('buy', 'sell')),
+        type TEXT CHECK(type IN ('خرید', 'فروش')),
         amount REAL,
         price_per_unit REAL,
         gold_price REAL,
+        dollar_price REAL,
         timestamp TEXT,
         note TEXT,
         gold_gain REAL,
