@@ -103,9 +103,9 @@ class InsightsView(QWidget):
         irr_section_layout.setAlignment(Qt.AlignRight) # Align content to the right
         irr_section_layout.setSpacing(10)
 
-        self.irr_label = QLabel("نرخ دلار به ریال (USD/IRR):")
+        self.irr_label = QLabel("قیمت دلار:")
         self.irr_input = QLineEdit()
-        self.irr_input.setPlaceholderText("مثال: 800,000") # Persian example
+        self.irr_input.setPlaceholderText("نمونه: 800,000") # Persian example
         self.irr_input.setAlignment(Qt.AlignRight) # Align input text to right
 
         self.calculate_gains_btn = QPushButton("محاسبه سود") # Persian label
@@ -162,12 +162,6 @@ class InsightsView(QWidget):
         self.table.setSortingEnabled(True)
 
         main_layout.addWidget(self.table)
-    
-    def _setup_connections(self):
-        """Sets up connections for buttons (implementation will be in controller)."""
-        # Connect buttons to placeholder methods or signals to be handled by controller
-        self.calculate_gains_btn.clicked.connect(lambda: print("Calculate Gains clicked"))
-
 
     def update_table(self, transactions: List[Any]): # Use Any if 'tx' is not a specific type yet
         """
