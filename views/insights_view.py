@@ -1,14 +1,10 @@
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget,
-    QTableWidgetItem, QLabel, QLineEdit, QHeaderView, QFrame,
-    QBoxLayout # Explicitly import QBoxLayout for clarity
+    QTableWidgetItem, QLabel, QLineEdit, QHeaderView, QFrame
 )
-from PyQt5.QtCore import Qt # Import Qt for alignment and direction
-from typing import List, Any # For type hinting
-
-# Assuming Asset model exists and is correctly imported
-from models.asset import Asset # This import is crucial for your original logic
-
+from PyQt5.QtCore import Qt
+from typing import List, Any
+from models.asset import Asset
 
 class InsightsView(QWidget):
     """
@@ -113,12 +109,13 @@ class InsightsView(QWidget):
         self.irr_input.setAlignment(Qt.AlignRight) # Align input text to right
 
         self.calculate_gains_btn = QPushButton("محاسبه سود") # Persian label
-        self.calculate_gains_btn.setObjectName("CalculateButton") # Specific name for potential future styling
+
+        self.refresh_btn = QPushButton("ریفرش") # Persian label
 
         irr_section_layout.addWidget(self.calculate_gains_btn) # Button on the left in RTL
-        irr_section_layout.addWidget(self.irr_input)
         irr_section_layout.addWidget(self.irr_label)
-        irr_section_layout.addStretch(1) # Pushes content to the right
+        irr_section_layout.addWidget(self.irr_input)
+        irr_section_layout.addWidget(self.refresh_btn)
 
         main_layout.addLayout(irr_section_layout)
 
@@ -129,50 +126,10 @@ class InsightsView(QWidget):
         separator_irr.setStyleSheet("color: #E0E0E0;")
         main_layout.addWidget(separator_irr)
 
-
         # --- Sorting Buttons Section ---
         sorting_buttons_vlayout = QVBoxLayout()
         sorting_buttons_vlayout.setSpacing(8) # Spacing between rows of buttons
         sorting_buttons_vlayout.setAlignment(Qt.AlignRight) # Align button groups to the right
-
-        # Row 1 of sorting buttons
-        button_layout_1 = QHBoxLayout()
-        button_layout_1.setSpacing(10)
-        button_layout_1.setAlignment(Qt.AlignRight) # Align buttons within the row to the right
-
-        self.most_asset_btn = QPushButton("بیشترین سود ریالی") # Persian label
-        self.most_asset_btn.setProperty("class", "SortButton") # Custom property for CSS
-        self.most_gold_btn = QPushButton("بیشترین سود دلاری") # Persian label
-        self.most_gold_btn.setProperty("class", "SortButton")
-        self.date_desc_btn = QPushButton("تاریخ نزولی") # Persian label
-        self.date_desc_btn.setProperty("class", "SortButton")
-
-        button_layout_1.addWidget(self.date_desc_btn)
-        button_layout_1.addWidget(self.most_gold_btn)
-        button_layout_1.addWidget(self.most_asset_btn)
-        button_layout_1.addStretch(1) # Pushes buttons to the right
-
-        # Row 2 of sorting buttons
-        button_layout_2 = QHBoxLayout()
-        button_layout_2.setSpacing(10)
-        button_layout_2.setAlignment(Qt.AlignRight) # Align buttons within the row to the right
-
-        self.least_asset_btn = QPushButton("کمترین سود ریالی") # Persian label
-        self.least_asset_btn.setProperty("class", "SortButton")
-        self.least_gold_btn = QPushButton("کمترین سود دلاری") # Persian label
-        self.least_gold_btn.setProperty("class", "SortButton")
-        self.date_asc_btn = QPushButton("تاریخ صعودی") # Persian label
-        self.date_asc_btn.setProperty("class", "SortButton")
-
-        button_layout_2.addWidget(self.date_asc_btn)
-        button_layout_2.addWidget(self.least_gold_btn)
-        button_layout_2.addWidget(self.least_asset_btn)
-        button_layout_2.addStretch(1) # Pushes buttons to the right
-
-        sorting_buttons_vlayout.addLayout(button_layout_1)
-        sorting_buttons_vlayout.addLayout(button_layout_2)
-        
-        main_layout.addLayout(sorting_buttons_vlayout)
 
         # --- Separator below Sorting buttons ---
         separator_sort = QFrame()
@@ -202,6 +159,7 @@ class InsightsView(QWidget):
         self.table.setAlternatingRowColors(True) # Enable alternating row colors for readability
         self.table.setSelectionBehavior(QTableWidget.SelectRows) # Select entire rows
         self.table.setEditTriggers(QTableWidget.NoEditTriggers) # Make table read-only
+        self.table.setSortingEnabled(True)
 
         main_layout.addWidget(self.table)
     
@@ -209,12 +167,6 @@ class InsightsView(QWidget):
         """Sets up connections for buttons (implementation will be in controller)."""
         # Connect buttons to placeholder methods or signals to be handled by controller
         self.calculate_gains_btn.clicked.connect(lambda: print("Calculate Gains clicked"))
-        self.most_asset_btn.clicked.connect(lambda: print("Most Asset Gain clicked"))
-        self.most_gold_btn.clicked.connect(lambda: print("Most Gold Gain clicked"))
-        self.date_desc_btn.clicked.connect(lambda: print("Date Descending clicked"))
-        self.least_asset_btn.clicked.connect(lambda: print("Least Asset Gain clicked"))
-        self.least_gold_btn.clicked.connect(lambda: print("Least Gold Gain clicked"))
-        self.date_asc_btn.clicked.connect(lambda: print("Date Ascending clicked"))
 
 
     def update_table(self, transactions: List[Any]): # Use Any if 'tx' is not a specific type yet

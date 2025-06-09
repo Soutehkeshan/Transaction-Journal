@@ -11,14 +11,9 @@ class InsightsController(QObject):
 
         # Connect calculate button
         self.view.calculate_gains_btn.clicked.connect(self.calculate_gains)
+        self.view.refresh_btn.clicked.connect(lambda: self.sort_and_display("timestamp", reverse=True))
 
-        # Connect sort buttons
-        self.view.most_asset_btn.clicked.connect(lambda: self.sort_and_display("gain", reverse=True))
-        self.view.least_asset_btn.clicked.connect(lambda: self.sort_and_display("gain", reverse=False))
-        self.view.most_gold_btn.clicked.connect(lambda: self.sort_and_display("gold_gain", reverse=True))
-        self.view.least_gold_btn.clicked.connect(lambda: self.sort_and_display("gold_gain", reverse=False))
-        self.view.date_asc_btn.clicked.connect(lambda: self.sort_and_display("timestamp", reverse=False))
-        self.view.date_desc_btn.clicked.connect(lambda: self.sort_and_display("timestamp", reverse=True))
+        self.sort_and_display("timestamp", reverse=True)
 
     def calculate_gains(self):
         latest_gold_price = fetch_gold_price()
