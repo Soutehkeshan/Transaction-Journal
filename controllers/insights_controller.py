@@ -51,6 +51,7 @@ class InsightsController(QObject):
                 "هشدار ورودی", 
                 "قیمت دلار ۰ ذخیره شد زیرا آن را وارد نکردید"
             )
+            self.view.irr_input.setText("0")
             return True
         
         try:
