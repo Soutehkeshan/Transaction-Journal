@@ -18,15 +18,26 @@ class Transaction:
     def save(self):
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("""
-                        INSERT INTO transactions (asset_id, type, amount, price_per_unit,
-                        gold_price, dollar_price, timestamp, note)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                        """, (
-                            self.asset_id, self.type, self.amount, self.price_per_unit,
-                            self.gold_price, self.dollar_price, self.timestamp, self.note
-                            ))
-        self.id = cursor.lastrowid
+        if self.id is None:
+            cursor.execute("""
+                INSERT INTO transactions (asset_id, type, amount, price_per_unit,
+                gold_price, dollar_price, timestamp, note)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                self.asset_id, self.type, self.amount, self.price_per_unit,
+                self.gold_price, self.dollar_price, self.timestamp, self.note
+            ))
+            self.id = cursor.lastrowid
+        else:
+            cursor.execute("""
+                UPDATE transactions
+                SET asset_id = ?, type = ?, amount = ?, price_per_unit = ?,
+                    gold_price = ?, dollar_price = ?, timestamp = ?, note = ?
+                WHERE id = ?
+            """, (
+                self.asset_id, self.type, self.amount, self.price_per_unit,
+                self.gold_price, self.dollar_price, self.timestamp, self.note, self.id
+            ))
         conn.commit()
         conn.close()
 

@@ -5,7 +5,6 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import QStringListModel, pyqtSignal, Qt
 import jdatetime
-from typing import List
 
 class TransactionEntryView(QWidget):
     submitted = pyqtSignal()
@@ -267,9 +266,3 @@ class TransactionEntryView(QWidget):
     def toggle_price_inputs(self, state):
         self.gold_price_input.setEnabled(not state)
         self.price_input.setEnabled(state) # Enable price_input when not using market price
-
-    def update_symbol_completer(self, symbols: List[str]):
-        self.symbol_model.setStringList(symbols)
-
-    def show_status(self, message: str):
-        self.status_label.setText(message)

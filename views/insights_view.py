@@ -6,6 +6,7 @@ from PyQt5.QtCore import Qt
 from typing import List, Any
 from models.asset import Asset
 from models.gain import Gain
+from PyQt5.QtWidgets import QMessageBox
 
 class InsightsView(QWidget):
     """
@@ -18,7 +19,7 @@ class InsightsView(QWidget):
         self.setStyleSheet("""
             QWidget {
                 background-color: #F8F8F8;
-                font-family: "Segoe UI", "Tahoma", "Arial", "B Nazanin", "IRANSans";
+                font-family: "Helvetica Neue", "Arial", "B Nazanin", "IRANSans", "Tahoma";
                 font-size: 10pt;
                 color: #333333;
             }
@@ -112,10 +113,14 @@ class InsightsView(QWidget):
 
         self.refresh_btn = QPushButton("ریفرش") # Persian label
 
+        # --- Modify Button at the Top ---
+        self.modify_btn = QPushButton("ویرایش")
+
         irr_section_layout.addWidget(self.calculate_gains_btn) # Button on the left in RTL
         irr_section_layout.addWidget(self.irr_label)
         irr_section_layout.addWidget(self.irr_input)
         irr_section_layout.addWidget(self.refresh_btn)
+        irr_section_layout.addWidget(self.modify_btn)
 
         main_layout.addLayout(irr_section_layout)
 
@@ -167,6 +172,7 @@ class InsightsView(QWidget):
         """
         Populates the table with transaction data and associated gains from the gains table.
         """
+        self._transactions = transactions  # Save for later access
         self.table.setRowCount(len(transactions))
         for row, tx in enumerate(transactions):
             total_value = tx.amount * tx.price_per_unit

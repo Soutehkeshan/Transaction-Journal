@@ -1,9 +1,11 @@
 from datetime import datetime
 from PyQt5.QtCore import QObject
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtWidgets import QMessageBox, QDialog
 from models.asset import Asset
 from models.transaction import Transaction
 from data_fetcher import fetch_gold_price, fetch_price
+from views.modify_transaction_dialog import ModifyTransactionDialog
+from views.PopUp import PopUp
 
 class InsightsController(QObject):
     def __init__(self, view):
@@ -13,6 +15,7 @@ class InsightsController(QObject):
         # Connect calculate button
         self.view.calculate_gains_btn.clicked.connect(self.calculate_gains)
         self.view.refresh_btn.clicked.connect(lambda: self.sort_and_display("timestamp", reverse=True))
+        self.view.modify_btn.clicked.connect(self.modify_selected_transaction)
 
         self.sort_and_display("timestamp", reverse=True)
 
@@ -40,6 +43,38 @@ class InsightsController(QObject):
         transactions = [tx for tx in transactions if hasattr(tx, key)]
         sorted_tx = sorted(transactions, key=lambda t: getattr(t, key), reverse=reverse)
         self.view.update_table(sorted_tx)
+
+    def modify_selected_transaction(self):
+        selected = self.view.table.selectedItems()
+        if not selected:
+            PopUp.show_warning(title="انتخاب تراکنش", message="لطفاً یک ردیف را انتخاب کنید.")
+            return
+        row = self.view.table.currentRow()
+        if not hasattr(self.view, "_transactions") or row >= len(self.view._transactions):
+            PopUp.show_warning(title="خطا", message="تراکنش انتخاب‌شده یافت نشد.")
+            return
+        tx = self.view._transactions[row]
+        dialog = ModifyTransactionDialog(tx, self.view)
+        
+        if dialog.exec_() == QDialog.Accepted:
+            data = dialog.get_data()
+            symbol = data["symbol"]
+            asset = Asset.get_by_symbol(symbol)
+            if not asset:
+                new_asset = Asset(symbol=symbol).save()  # Save new asset if it doesn't exist
+                tx.asset_id = new_asset.id
+            elif asset.id != tx.asset_id:
+                tx.asset_id = asset.id
+            
+            tx.type = data["type"]
+            tx.amount = data["amount"]
+            tx.price_per_unit = data["price_per_unit"]
+            tx.gold_price = data["gold_price"]
+            tx.dollar_price = data["dollar_price"]
+            tx.timestamp = data["timestamp"]
+            tx.note = data["note"]
+            tx.save()
+            self.view.update_table(self.view._transactions)
 
     def validate_inputs(self):
         """Validate input fields before calculating gains"""
