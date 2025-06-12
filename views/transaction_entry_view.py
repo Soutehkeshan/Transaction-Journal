@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import (
-    QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout,
-    QComboBox, QTextEdit, QCompleter, QCheckBox, QDoubleSpinBox, QFormLayout,
+    QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout,
+    QComboBox, QTextEdit, QCompleter, QCheckBox, QFormLayout,
     QFrame
 )
 from PyQt5.QtCore import QStringListModel, pyqtSignal, Qt
@@ -73,10 +73,6 @@ class TransactionEntryView(BaseView):
         self.dollar_price_input.setAlignment(Qt.AlignRight)
 
         self.submit_button = QPushButton("ثبت تراکنش") # More descriptive text
-        self.status_label = QLabel("اعلانیه")
-        self.status_label.setObjectName("statusLabel") # Set object name for specific CSS targeting
-        self.status_label.setAlignment(Qt.AlignCenter) # Center status messages
-        # Removed inline style, now handled by stylesheet with objectName
 
     def init_layout(self):
         # Overall main layout to center the content
@@ -143,7 +139,6 @@ class TransactionEntryView(BaseView):
         button_and_status_vlayout = QVBoxLayout()
         button_and_status_vlayout.setAlignment(Qt.AlignHCenter) # Center the button and status horizontally
         button_and_status_vlayout.addWidget(self.submit_button)
-        button_and_status_vlayout.addWidget(self.status_label)
         
         main_content_vlayout.addLayout(button_and_status_vlayout)
         main_content_vlayout.addStretch(1) # Pushes content to top
