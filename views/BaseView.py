@@ -22,9 +22,9 @@ class BaseView(QWidget):
             background-color: #F1F5F9;
             border: 1px solid #DADDE1;
             border-radius: 8px;
-            padding: 10px 16px;
-            font-size: 12pt;
-            font-weight: bold;
+            font-size: 10pt;
+            font-weight: normal;
+            padding: 6px 12px;
             margin-left: 10px;
             margin-bottom: 6px;
             letter-spacing: 0.4px;
