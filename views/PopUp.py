@@ -16,3 +16,11 @@ class PopUp:
         msg_box.setText(message)
         msg_box.setIcon(QMessageBox.Warning)
         msg_box.exec_()
+
+    @staticmethod
+    def show_error(message: str, title: str = "خطا"):
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle(title)
+        msg_box.setText(message)
+        msg_box.setIcon(QMessageBox.Critical)
+        msg_box.exec_()
