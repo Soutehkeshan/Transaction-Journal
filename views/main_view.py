@@ -15,7 +15,7 @@ class MainView(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("دفترچه تراکنش") # Set window title in Persian
-        self.setMinimumSize(950, 750) # Adjusted minimum size for better fit
+        self.resize(1300, 750)
         self.setLayoutDirection(Qt.RightToLeft) # Set main window layout direction to RTL
 
         self._setup_ui()
@@ -106,9 +106,7 @@ class MainView(QMainWindow):
         self.setStyleSheet("""
             QMainWindow {
                 background-color: #F0F2F5; /* Light background for the main window */
-                font-family: "Segoe UI", "Tahoma", "Arial", "B Nazanin", "IRANSans";
             }
-            /* Styling for general PushButtons (if any, less specific than navButton) */
             QPushButton {
                 font-size: 10pt;
                 padding: 10px 15px;
