@@ -2,6 +2,7 @@ import jdatetime
 from data_fetcher import fetch_gold_price
 from models.transaction import Transaction
 from models.asset import Asset
+from views.PopUp import PopUp
 
 class TransactionEntryController:
     def __init__(self, view):
@@ -13,43 +14,60 @@ class TransactionEntryController:
         self.view.submit_button.clicked.connect(self.handle_submit)
 
     def handle_submit(self):
-        # try:
-            symbol = self.view.symbol_input.text().strip().upper()
+        symbol = self.view.symbol_input.text().strip().upper()
 
-            existing_symbols = Asset.get_all_symbols()
-            if symbol not in existing_symbols:
-                asset = Asset(symbol)
-                asset.save()
-            
-            asset_id = Asset.get_by_symbol(symbol).id
+        existing_symbols = Asset.get_all_symbols()
+        if symbol not in existing_symbols:
+            asset = Asset(symbol)
+            asset.save()
+        
+        asset_id = Asset.get_by_symbol(symbol).id
 
-            tx_type = self.view.type_input.currentText()
+        tx_type = self.view.type_input.currentText()
+
+        try:
             amount = float(self.view.amount_input.text())
+        except Exception as e:
+            PopUp.show_error("مقدار وارد شده برای مقدار دارایی معتبر نیست. لطفاً یک عدد وارد کنید.")
+            return
+        try:
             price = float(self.view.price_input.text())
+        except Exception as e:
+            PopUp.show_error("مقدار وارد شده برای قیمت دارایی معتبر نیست. لطفاً یک عدد وارد کنید.")
+            return
 
-            # --- Date handling ---
-            if self.view.now_checkbox.isChecked():
-                timestamp = jdatetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            else:
+        # --- Date handling ---
+        if self.view.now_checkbox.isChecked():
+            timestamp = jdatetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        else:
+            try:
                 timestamp_qt = self.view.date_input.dateTime()
-                timestamp = timestamp_qt.toPyDateTime()
+            except Exception as e:
+                PopUp.show_error("تاریخ وارد شده معتبر نیست. لطفاً یک تاریخ صحیح وارد کنید.")
+                return
+            timestamp = timestamp_qt.toPyDateTime()
 
-            # --- Market prices ---
-            if self.view.use_market_price_checkbox.isChecked():
-                gold_price = fetch_gold_price()
-            else:
+        # --- Market prices ---
+        if self.view.use_market_price_checkbox.isChecked():
+            gold_price = fetch_gold_price()
+        else:
+            try:
                 gold_price = float(self.view.gold_price_input.text())
-
+            except Exception as e:
+                PopUp.show_error("مقدار وارد شده برای قیمت طلا معتبر نیست. لطفاً یک عدد وارد کنید.")
+                return
+            
+        try:
             dollar_price = float(self.view.dollar_price_input.text())
+        except Exception as e:
+            PopUp.show_error("مقدار وارد شده برای قیمت دلار معتبر نیست. لطفاً یک عدد وارد کنید.")
+            return
 
-            note = self.view.note_input.toPlainText().strip()
+        note = self.view.note_input.toPlainText().strip()
 
-            transaction = Transaction(asset_id, tx_type, amount, price, gold_price, dollar_price, timestamp, note)
-            transaction.save()
-            self.view.status_label.setText("تراکنش با موفقیت ثبت شد! ✅")
-
-        # except Exception as e:
-        #     self.view.status_label.setText(f"❌ Error: {str(e)}")
+        transaction = Transaction(asset_id, tx_type, amount, price, gold_price, dollar_price, timestamp, note)
+        transaction.save()
+        PopUp.show_message("تراکنش با موفقیت ثبت شد! ✅")
 
     def update_symbol_suggestions(self):
         try:

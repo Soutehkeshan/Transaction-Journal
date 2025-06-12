@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QDialog, QFormLayout, QLineEdit, QDialogButtonBox, QComboBox, QLabel, QCompleter
 from PyQt5.QtCore import Qt, QStringListModel
-from models.asset import Asset  # Make sure this is your Asset model
+from models.asset import Asset
+from views.PopUp import PopUp
 
 class ModifyTransactionDialog(QDialog):
     def __init__(self, tx, parent=None):
@@ -135,8 +136,11 @@ class ModifyTransactionDialog(QDialog):
         layout.addRow(QLabel("یادداشت:"), self.note_edit)
 
         buttons = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
-        buttons.accepted.connect(self.accept)
+        buttons.accepted.disconnect()
         buttons.rejected.connect(self.reject)
+
+        # Connect Save manually
+        buttons.accepted.connect(self.validate_and_accept)
 
         # Rename buttons to Persian
         buttons.button(QDialogButtonBox.Save).setText("ذخیره")
@@ -146,13 +150,55 @@ class ModifyTransactionDialog(QDialog):
         self.setLayout(layout)
 
     def get_data(self):
-        return {
-            "symbol": self.asset_name_edit.text().strip(),
-            "type": self.type_edit.currentText(),
-            "amount": float(self.amount_edit.text()),
-            "price_per_unit": float(self.price_edit.text()),
-            "gold_price": float(self.gold_price_edit.text()),
-            "dollar_price": float(self.dollar_price_edit.text()),
-            "timestamp": self.timestamp_edit.text(),
-            "note": self.note_edit.text()
-        }
+        try:
+            symbol = self.asset_name_edit.text().strip()
+            if not symbol:
+                raise ValueError("نام دارایی نمی‌تواند خالی باشد.")
+
+            tx_type = self.type_edit.currentText()
+
+            try:
+                amount = float(self.amount_edit.text())
+            except Exception:
+                raise ValueError("تعداد وارد شده معتبر نیست. لطفاً یک عدد وارد کنید.")
+
+            try:
+                price = float(self.price_edit.text())
+            except Exception:
+                raise ValueError("قیمت واحد وارد شده معتبر نیست. لطفاً یک عدد وارد کنید.")
+
+            try:
+                gold_price = float(self.gold_price_edit.text())
+            except Exception:
+                raise ValueError("قیمت طلا وارد شده معتبر نیست. لطفاً یک عدد وارد کنید.")
+
+            try:
+                dollar_price = float(self.dollar_price_edit.text())
+            except Exception:
+                raise ValueError("قیمت دلار وارد شده معتبر نیست. لطفاً یک عدد وارد کنید.")
+
+            timestamp = self.timestamp_edit.text().strip()
+            if not timestamp:
+                raise ValueError("تاریخ و زمان نمی‌تواند خالی باشد.")
+
+            note = self.note_edit.text().strip()
+
+            return {
+                "symbol": symbol,
+                "type": tx_type,
+                "amount": amount,
+                "price_per_unit": price,
+                "gold_price": gold_price,
+                "dollar_price": dollar_price,
+                "timestamp": timestamp,
+                "note": note
+            }
+
+        except ValueError as e:
+            PopUp.show_error(str(e))
+            return None
+
+    def validate_and_accept(self):
+        data = self.get_data()
+        if data is not None:
+            self.accept()  # Only accept if data is valid
