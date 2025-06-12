@@ -3,7 +3,7 @@ from PyQt5.QtCore import QObject
 from PyQt5.QtWidgets import QMessageBox, QDialog
 from models.asset import Asset
 from models.transaction import Transaction
-from data_fetcher import fetch_gold_price, fetch_price
+from data_fetcher import fetch_gold_price, fetch_min_price, fetch_max_price
 from views.modify_transaction_dialog import ModifyTransactionDialog
 from views.PopUp import PopUp
 
@@ -32,10 +32,13 @@ class InsightsController(QObject):
             if not asset:
                 continue
 
-            # Get latest asset price in original currency
-            latest_asset_price = fetch_price(asset)
+            tx_type = tx.type
 
-            tx_type = tx.type  # "buy" or "sell"
+            if tx_type == "خرید":
+                latest_asset_price = fetch_min_price(asset)
+            else:
+                latest_asset_price = fetch_max_price(asset)
+
             tx.calculate_gains(latest_asset_price, latest_dollar_price, latest_gold_price, tx_type)
 
     def sort_and_display(self, key, reverse):
