@@ -35,6 +35,11 @@ class InsightsView(BaseView):
         self.irr_input.setPlaceholderText("نمونه: 800,000") # Persian example
         self.irr_input.setAlignment(Qt.AlignRight) # Align input text to right
 
+        # --- Latest Gold Price Display ---
+        self.latest_gold_price_label = QLabel("آخرین قیمت طلا: ---")
+        self.latest_gold_price_label.setAlignment(Qt.AlignRight)
+        self.latest_gold_price_label.setStyleSheet("font-weight: bold; color: #B8860B; font-size: 12pt;")
+
         self.calculate_gains_btn = QPushButton("محاسبه سود") # Persian label
 
         self.refresh_btn = QPushButton("ریفرش") # Persian label
@@ -45,6 +50,7 @@ class InsightsView(BaseView):
         irr_section_layout.addWidget(self.calculate_gains_btn) # Button on the left in RTL
         irr_section_layout.addWidget(self.irr_label)
         irr_section_layout.addWidget(self.irr_input)
+        irr_section_layout.addWidget(self.latest_gold_price_label)
         irr_section_layout.addWidget(self.refresh_btn)
         irr_section_layout.addWidget(self.modify_btn)
 
@@ -56,18 +62,6 @@ class InsightsView(BaseView):
         separator_irr.setFrameShadow(QFrame.Sunken)
         separator_irr.setStyleSheet("color: #E0E0E0;")
         main_layout.addWidget(separator_irr)
-
-        # --- Sorting Buttons Section ---
-        sorting_buttons_vlayout = QVBoxLayout()
-        sorting_buttons_vlayout.setSpacing(8) # Spacing between rows of buttons
-        sorting_buttons_vlayout.setAlignment(Qt.AlignRight) # Align button groups to the right
-
-        # --- Separator below Sorting buttons ---
-        separator_sort = QFrame()
-        separator_sort.setFrameShape(QFrame.HLine)
-        separator_sort.setFrameShadow(QFrame.Sunken)
-        separator_sort.setStyleSheet("color: #E0E0E0;")
-        main_layout.addWidget(separator_sort)
 
         # --- Transactions Table ---
         self.table = QTableWidget()

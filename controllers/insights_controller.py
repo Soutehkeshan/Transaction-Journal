@@ -25,6 +25,7 @@ class InsightsController(QObject):
             return  # Stop execution if validation fails
         
         latest_gold_price = fetch_gold_price()
+        self.view.latest_gold_price_label.setText(f"آخرین قیمت طلا: {latest_gold_price:,.0f}")
         latest_dollar_price = float(self.view.irr_input.text().replace(',', '')) 
 
         for tx in Transaction.get_all():
