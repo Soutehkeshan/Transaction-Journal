@@ -38,15 +38,15 @@ class TransactionEntryController:
             if self.view.use_market_price_checkbox.isChecked():
                 gold_price = fetch_gold_price()
             else:
-                gold_price = float(self.view.amount_input.text())
+                gold_price = float(self.view.gold_price_input.text())
 
-            dollar_price = float(self.view.amount_input.text())
+            dollar_price = float(self.view.dollar_price_input.text())
 
             note = self.view.note_input.toPlainText().strip()
 
             transaction = Transaction(asset_id, tx_type, amount, price, gold_price, dollar_price, timestamp, note)
             transaction.save()
-            self.view.status_label.setText("✅ Transaction added successfully!")
+            self.view.status_label.setText("تراکنش با موفقیت ثبت شد! ✅")
 
         # except Exception as e:
         #     self.view.status_label.setText(f"❌ Error: {str(e)}")
