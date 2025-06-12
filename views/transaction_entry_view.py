@@ -6,101 +6,14 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import QStringListModel, pyqtSignal, Qt
 import jdatetime
 
-class TransactionEntryView(QWidget):
+from views.BaseView import BaseView
+
+class TransactionEntryView(BaseView):
     submitted = pyqtSignal()
 
     def __init__(self):
         super().__init__()
         self.setWindowTitle("ثبت تراکنش جدید")
-        self.setMinimumWidth(650) # Increased width significantly for wider fields and centering
-        self.setLayoutDirection(Qt.RightToLeft)
-        self.setStyleSheet("""
-    QWidget {
-        background-color: #F8F8F8;
-        font-family: "Tahoma", "Arial", "B Nazanin", "IRANSans", sans-serif;
-        font-size: 10pt;
-    }
-    QLabel {
-        color: #333;
-        background: #F0F4F8;
-        border: 1px solid #E0E0E0;
-        border-radius: 7px;
-        padding: 8px 14px;
-        font-size: 12pt;
-        font-weight: 600;
-        margin-left: 10px;
-        margin-bottom: 4px;
-        letter-spacing: 0.5px;
-    }
-    #statusLabel {
-        color: #D32F2F;
-        font-weight: bold;
-        margin-top: 10px;
-    }
-    QLineEdit, QTextEdit, QComboBox, QDoubleSpinBox {
-        border: 1px solid #CCCCCC;
-        border-radius: 5px;
-        padding: 8px;
-        background-color: #FFFFFF;
-        color: #333333;
-    }
-    QLineEdit:focus, QTextEdit:focus, QComboBox:focus, QDoubleSpinBox:focus {
-        border: 1px solid #007ACC; /* Highlight on focus */
-    }
-    QPushButton {
-        background-color: #007ACC;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        padding: 10px 20px;
-        font-weight: bold;
-        min-width: 150px; /* Ensure button has a minimum width */
-    }
-    QPushButton:hover {
-        background-color: #005F99;
-    }
-    QCheckBox {
-        color: #333333;
-        spacing: 8px;
-    }
-    QCheckBox::indicator {
-        width: 18px;
-        height: 18px;
-        border: 1px solid #999999;
-        border-radius: 3px;
-        background-color: #FFFFFF;
-    }
-    QCheckBox::indicator:checked {
-        background-color: #007ACC; /* Blue background when checked */
-        border: 1px solid #007ACC;
-        image: url(C:/Users/moham/PycharmProjects/TseClient/assets/icons/tick_white.png); /* Path to your white tick icon */
-    }
-    QComboBox::drop-down {
-        subcontrol-origin: padding;
-        subcontrol-position: left; /* Align dropdown arrow to the left for RTL */
-        width: 20px;
-        border-left-width: 1px;
-        border-left-color: #CCCCCC;
-        border-left-style: solid;
-        border-top-right-radius: 3px;
-        border-bottom-right-radius: 3px;
-    }
-    QComboBox::down-arrow {
-        image: url(C:/Users/moham/PycharmProjects/TseClient/assets/icons/arrow_left.png); /* Path to your left-pointing arrow icon */
-    }
-    QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
-        width: 20px;
-        border-left: 1px solid #CCCCCC;
-        border-top-right-radius: 3px;
-        border-bottom-right-radius: 3px;
-    }
-    QDoubleSpinBox::up-arrow {
-        image: url(C:/Users/moham/PycharmProjects/TseClient/assets/icons/arrow_up.png);
-    }
-    QDoubleSpinBox::down-arrow {
-        image: url(C:/Users/moham/PycharmProjects/TseClient/assets/icons/arrow_down.png);
-    }
-        """)
 
         self.init_inputs()
         self.init_layout()
@@ -111,7 +24,6 @@ class TransactionEntryView(QWidget):
         self.symbol_input = QLineEdit()
         self.symbol_input.setPlaceholderText("نماد سهام (مثلاً: پارسیان)")
         self.symbol_input.setAlignment(Qt.AlignRight)
-        self.symbol_input.setMinimumWidth(350) # Increased width
 
         self.symbol_model = QStringListModel()
         self.symbol_completer = QCompleter(self.symbol_model)
@@ -122,23 +34,19 @@ class TransactionEntryView(QWidget):
         self.type_input.addItems(["خرید", "فروش"])
         self.type_input.setEditable(False)
         self.type_input.setLayoutDirection(Qt.RightToLeft)
-        self.type_input.setMinimumWidth(350) # Increased width
         self.type_input.setStyleSheet("QComboBox { text-align: right; }") # Align text in combobox
 
         self.amount_input = QLineEdit()
         self.amount_input.setPlaceholderText("مثلاً: 100")
         self.amount_input.setAlignment(Qt.AlignRight)
-        self.amount_input.setMinimumWidth(350) # Increased width
 
         self.price_input = QLineEdit()
         self.price_input.setPlaceholderText("مثلاً: 2500")
         self.price_input.setAlignment(Qt.AlignRight)
-        self.price_input.setMinimumWidth(350) # Increased width
 
         self.note_input = QTextEdit()
         self.note_input.setPlaceholderText("توضیح اختیاری...")
         self.note_input.setAlignment(Qt.AlignRight)
-        self.note_input.setMinimumWidth(350) # Increased width
         self.note_input.setMinimumHeight(100) # Increased height for more space
 
         self.date_input = QLineEdit()
@@ -157,16 +65,12 @@ class TransactionEntryView(QWidget):
         self.use_market_price_checkbox.setChecked(True)
         self.use_market_price_checkbox.setLayoutDirection(Qt.RightToLeft)
 
-        self.gold_price_input = QDoubleSpinBox()
-        self.gold_price_input.setMaximum(1000000000) # Increased max value
+        self.gold_price_input = QLineEdit()
         self.gold_price_input.setEnabled(False)
         self.gold_price_input.setAlignment(Qt.AlignRight)
-        self.gold_price_input.setMinimumWidth(350) # Adjusted width
 
-        self.dollar_price_input = QDoubleSpinBox()
-        self.dollar_price_input.setMaximum(1000000000) # Increased max value
+        self.dollar_price_input = QLineEdit()
         self.dollar_price_input.setAlignment(Qt.AlignRight)
-        self.dollar_price_input.setMinimumWidth(350) # Adjusted width
 
         self.submit_button = QPushButton("ثبت تراکنش") # More descriptive text
         self.status_label = QLabel("اعلانیه")
