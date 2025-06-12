@@ -8,90 +8,17 @@ from models.asset import Asset
 from models.gain import Gain
 from PyQt5.QtWidgets import QMessageBox
 
-class InsightsView(QWidget):
+from views.BaseView import BaseView  # Make sure this path is correct
+
+class InsightsView(BaseView):
     """
     Provides an interface to view and analyze transaction insights,
     including currency conversion, sorting, and a detailed transaction table.
     """
     def __init__(self):
         super().__init__()
-        self.setLayoutDirection(Qt.RightToLeft) # Set layout direction for the widget
-        self.setStyleSheet("""
-            QWidget {
-                background-color: #F8F8F8;
-                font-family: "Helvetica Neue", "Arial", "B Nazanin", "IRANSans", "Tahoma";
-                font-size: 10pt;
-                color: #333333;
-            }
-            QLabel {
-                font-weight: bold;
-                color: #4A4A4A;
-                padding: 5px 0;
-            }
-            QLineEdit {
-                border: 1px solid #CCCCCC;
-                border-radius: 5px;
-                padding: 8px;
-                background-color: #FFFFFF;
-                color: #333333;
-                min-width: 150px; /* Adjust width as needed */
-            }
-            QPushButton {
-                background-color: #007ACC;
-                color: white;
-                border: none;
-                border-radius: 5px;
-                padding: 10px 15px;
-                font-weight: bold;
-                min-width: 120px;
-            }
-            QPushButton:hover {
-                background-color: #005F99;
-            }
-            QPushButton:pressed {
-                background-color: #004C80;
-            }
-            /* Styling for sorting buttons specifically */
-            QPushButton.SortButton { /* Using a class-like selector */
-                background-color: #6C757D; /* Grey background for sorting buttons */
-                color: white;
-                padding: 8px 12px;
-                font-size: 9pt;
-                min-width: 100px;
-            }
-            QPushButton.SortButton:hover {
-                background-color: #5A6268;
-            }
-            QPushButton.SortButton:pressed {
-                background-color: #495057;
-            }
-            QTableWidget {
-                background-color: #FFFFFF;
-                border: 1px solid #E0E0E0;
-                border-radius: 8px;
-                gridline-color: #EEEEEE; /* Lighter grid lines */
-                font-size: 9pt;
-            }
-            QHeaderView::section {
-                background-color: #E0E5EC; /* Header background color */
-                color: #333333;
-                padding: 8px;
-                border: 1px solid #D1D5DA;
-                font-weight: bold;
-                font-size: 9pt;
-                text-align: right; /* Align header text to right for RTL */
-            }
-            QTableWidget::item {
-                padding: 5px;
-                text-align: right; /* Align item text to right for RTL */
-            }
-            QTableWidget::item:selected {
-                background-color: #B0D9FF; /* Light blue on selection */
-                color: #333333;
-            }
-        """)
 
-        self._setup_ui() # Encapsulate UI setup
+        self._setup_ui()
 
     def _setup_ui(self):
         """Sets up the layout and widgets for the InsightsView."""
@@ -156,9 +83,33 @@ class InsightsView(QWidget):
 
         # Adjust header behavior: Stretch last section, enable sorting click
         header = self.table.horizontalHeader()
-        header.setSectionResizeMode(QHeaderView.Stretch) # Make columns fill available space
-        header.setStretchLastSection(True) # Ensure the last column stretches to fill
-        header.setDefaultAlignment(Qt.AlignRight) # Default alignment for headers
+        # Allow manual resizing of all columns
+        header.setSectionResizeMode(QHeaderView.Interactive)
+
+        # Let the user rearrange columns (optional)
+        header.setSectionsMovable(True)
+
+        # Set default widths to ensure datetime and important fields have space
+        column_widths = {
+            1: 60,    # نوع
+            2: 80,    # تعداد
+            3: 100,   # قیمت واحد
+            4: 100,   # جمع کل
+            5: 90,    # قیمت طلا
+            6: 90,    # قیمت دلار
+            7: 180,   # یادداشت
+            8: 80,    # سود ریالی
+            9: 80,    # سود دلاری
+            10: 80,   # سود طلایی
+            11: 160   # تاریخ و زمان (give more space here)
+        }
+        for col, width in column_widths.items():
+            self.table.setColumnWidth(col, width)
+
+        header.setStretchLastSection(True)
+
+        # Align header text to right
+        header.setDefaultAlignment(Qt.AlignRight)
         
         self.table.verticalHeader().setVisible(False) # Hide vertical header (row numbers)
         self.table.setAlternatingRowColors(True) # Enable alternating row colors for readability
@@ -196,7 +147,7 @@ class InsightsView(QWidget):
             self.table.setItem(row, 7, QTableWidgetItem(tx.note))
             self.table.setItem(row, 8, QTableWidgetItem(f"{irr_gain:.2f}"))
             self.table.setItem(row, 9, QTableWidgetItem(f"{usd_gain:.2f}"))
-            self.table.setItem(row, 10, QTableWidgetItem(f"{gold_gain:.6f}"))
+            self.table.setItem(row, 10, QTableWidgetItem(f"{gold_gain:.2f}"))
             self.table.setItem(row, 11, QTableWidgetItem(str(tx.timestamp)))
 
             # Align content of each cell to the right
