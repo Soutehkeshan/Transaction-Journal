@@ -38,9 +38,9 @@ class TransactionEntryController:
             if self.view.use_market_price_checkbox.isChecked():
                 gold_price = fetch_gold_price()
             else:
-                gold_price = self.view.gold_price_input.value()
+                gold_price = float(self.view.amount_input.text())
 
-            dollar_price = self.view.dollar_price_input.value()
+            dollar_price = float(self.view.amount_input.text())
 
             note = self.view.note_input.toPlainText().strip()
 
