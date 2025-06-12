@@ -8,7 +8,6 @@ class ModifyTransactionDialog(QDialog):
         self.setStyleSheet("""
             QWidget {
                 background-color: #F8F8F8;
-                font-family: "Tahoma", "Arial", "B Nazanin", "IRANSans", sans-serif;
                 font-size: 10pt;
             }
             QLabel {
@@ -64,7 +63,6 @@ class ModifyTransactionDialog(QDialog):
             QCheckBox::indicator:checked {
                 background-color: #007ACC; /* Blue background when checked */
                 border: 1px solid #007ACC;
-                image: url(C:/Users/moham/PycharmProjects/TseClient/assets/icons/tick_white.png); /* Path to your white tick icon */
             }
             QComboBox::drop-down {
                 subcontrol-origin: padding;
@@ -76,20 +74,11 @@ class ModifyTransactionDialog(QDialog):
                 border-top-right-radius: 3px;
                 border-bottom-right-radius: 3px;
             }
-            QComboBox::down-arrow {
-                image: url(C:/Users/moham/PycharmProjects/TseClient/assets/icons/arrow_left.png); /* Path to your left-pointing arrow icon */
-            }
             QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
                 width: 20px;
                 border-left: 1px solid #CCCCCC;
                 border-top-right-radius: 3px;
                 border-bottom-right-radius: 3px;
-            }
-            QDoubleSpinBox::up-arrow {
-                image: url(C:/Users/moham/PycharmProjects/TseClient/assets/icons/arrow_up.png);
-            }
-            QDoubleSpinBox::down-arrow {
-                image: url(C:/Users/moham/PycharmProjects/TseClient/assets/icons/arrow_down.png);
             }
                 """)
         self.setWindowTitle("ویرایش تراکنش")
