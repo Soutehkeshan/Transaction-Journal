@@ -1,14 +1,13 @@
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget,
+    QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget,
     QTableWidgetItem, QLabel, QLineEdit, QHeaderView, QFrame
 )
 from PyQt5.QtCore import Qt
 from typing import List, Any
 from models.asset import Asset
 from models.gain import Gain
-from PyQt5.QtWidgets import QMessageBox
 
-from views.BaseView import BaseView  # Make sure this path is correct
+from views.BaseView import BaseView
 
 class InsightsView(BaseView):
     """
@@ -72,13 +71,14 @@ class InsightsView(BaseView):
 
         # --- Transactions Table ---
         self.table = QTableWidget()
-        self.table.setColumnCount(12)
+        self.table.setColumnCount(13)
         
         # Set Persian Horizontal Header Labels
         self.table.setHorizontalHeaderLabels([
             "نماد", "نوع", "تعداد", "قیمت واحد", "جمع کل",
             "قیمت طلا", "قیمت دلار", "یادداشت",
-            "سود ریالی", "سود دلاری", "سود طلایی", "تاریخ و زمان"
+            "آخرین قیمت دارایی", "سود ریالی",
+            "سود دلاری", "سود طلایی", "تاریخ و زمان"
         ])
 
         # Adjust header behavior: Stretch last section, enable sorting click
@@ -98,10 +98,11 @@ class InsightsView(BaseView):
             5: 90,    # قیمت طلا
             6: 90,    # قیمت دلار
             7: 180,   # یادداشت
-            8: 80,    # سود ریالی
-            9: 80,    # سود دلاری
-            10: 80,   # سود طلایی
-            11: 160   # تاریخ و زمان (give more space here)
+            8: 100,   # آخرین قیمت دارایی
+            9: 80,    # سود ریالی
+            10: 80,    # سود دلاری
+            11: 80,   # سود طلایی
+            12: 160   # تاریخ و زمان (give more space here)
         }
         for col, width in column_widths.items():
             self.table.setColumnWidth(col, width)
@@ -133,6 +134,7 @@ class InsightsView(BaseView):
             # Retrieve associated gain using the Gain model
             gain = Gain.get_by_transaction_id(tx.id)
 
+            latest_asset_price = gain.latest_asset_price if gain else 0.0
             irr_gain = gain.irr_gain if gain else 0
             usd_gain = gain.usd_gain if gain else 0
             gold_gain = gain.gold_gain if gain else 0
@@ -145,10 +147,11 @@ class InsightsView(BaseView):
             self.table.setItem(row, 5, QTableWidgetItem(f"{tx.gold_price:.2f}"))
             self.table.setItem(row, 6, QTableWidgetItem(f"{tx.dollar_price:.2f}"))
             self.table.setItem(row, 7, QTableWidgetItem(tx.note))
-            self.table.setItem(row, 8, QTableWidgetItem(f"{irr_gain:.2f}"))
-            self.table.setItem(row, 9, QTableWidgetItem(f"{usd_gain:.2f}"))
-            self.table.setItem(row, 10, QTableWidgetItem(f"{gold_gain:.2f}"))
-            self.table.setItem(row, 11, QTableWidgetItem(str(tx.timestamp)))
+            self.table.setItem(row, 8, QTableWidgetItem(f"{latest_asset_price:.2f}"))
+            self.table.setItem(row, 9, QTableWidgetItem(f"{irr_gain:.2f}"))
+            self.table.setItem(row, 10, QTableWidgetItem(f"{usd_gain:.2f}"))
+            self.table.setItem(row, 11, QTableWidgetItem(f"{gold_gain:.2f}"))
+            self.table.setItem(row, 12, QTableWidgetItem(str(tx.timestamp)))
 
             # Align content of each cell to the right
             for col in range(self.table.columnCount()):

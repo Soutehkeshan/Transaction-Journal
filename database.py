@@ -41,6 +41,7 @@ def init_db():
                    CREATE TABLE IF NOT EXISTS gains (
                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                    transaction_id INTEGER,
+                   latest_asset_price REAL,
                    irr_gain REAL,
                    usd_gain REAL,
                    gold_gain REAL,

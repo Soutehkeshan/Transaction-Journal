@@ -84,13 +84,14 @@ class Transaction:
         existing_gain = Gain.get_by_transaction_id(self.id)
         if existing_gain:
             # Update existing gain
+            existing_gain.latest_asset_price = latest_price
             existing_gain.irr_gain = irr_gain
             existing_gain.usd_gain = dollar_gain
             existing_gain.gold_gain = gold_gain
             existing_gain.save_or_update()
         else:
             # Create new gain
-            gain = Gain(transaction_id=self.id, irr_gain=irr_gain, usd_gain=dollar_gain, gold_gain=gold_gain)
+            gain = Gain(transaction_id=self.id, latest_asset_price=latest_price, irr_gain=irr_gain, usd_gain=dollar_gain, gold_gain=gold_gain)
             gain.save_or_update()
 
     @classmethod
