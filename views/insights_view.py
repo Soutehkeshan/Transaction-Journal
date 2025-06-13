@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget,
-    QTableWidgetItem, QLabel, QLineEdit, QHeaderView, QFrame
+    QTableWidgetItem, QLabel, QLineEdit, QHeaderView, QFrame, QProgressBar
 )
 from PyQt5.QtCore import Qt
 from typing import List, Any
@@ -24,6 +24,14 @@ class InsightsView(BaseView):
         main_layout = QVBoxLayout(self)
         main_layout.setSpacing(15) # Increased spacing between sections
         main_layout.setContentsMargins(20, 20, 20, 20) # Margins around the view
+
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setAlignment(Qt.AlignCenter)
+        self.progress_bar.setValue(0)
+        # Remove percentage text
+        self.progress_bar.setTextVisible(False) 
+
+        main_layout.addWidget(self.progress_bar)
 
         # --- IRR (USD to IRR) Conversion Section ---
         irr_section_layout = QHBoxLayout()

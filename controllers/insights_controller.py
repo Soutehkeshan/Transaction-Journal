@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QObject
+from PyQt5.QtCore import QObject, pyqtSignal, QThread
 from PyQt5.QtWidgets import QDialog
 from models.asset import Asset
 from models.transaction import Transaction
@@ -19,35 +19,41 @@ class InsightsController(QObject):
         self.sort_and_display("timestamp", reverse=True)
 
     def calculate_gains(self):
-        # Validate inputs first
         if not self.validate_inputs():
-            return  # Stop execution if validation fails
-        
+            return
+
         try:
             latest_gold_price = fetch_gold_price()
             self.view.latest_gold_price_label.setText(f"آخرین قیمت طلا: {latest_gold_price:,.0f}")
-        except Exception as e:
+        except Exception:
             PopUp.show_error("خطا در دریافت قیمت طلا. لطفاً دوباره تلاش کنید.")
             return
 
         try:
-            latest_dollar_price = float(self.view.irr_input.text().replace(',', '')) 
+            latest_dollar_price = float(self.view.irr_input.text().replace(',', ''))
         except ValueError:
-            PopUp.show_error("قیمت دلار وارد شده معتبر نیست. لطفاً یک عدد وارد کنید.")
+            PopUp.show_error("قیمت دلار وارد شده معتبر نیست.")
             return
 
-        for tx in Transaction.get_all():
-            asset = Asset.get_by_id(tx.asset_id)
-            if not asset:
-                continue
+        self.thread = QThread()
+        self.worker = GainCalculatorWorker(latest_gold_price, latest_dollar_price)
+        self.worker.moveToThread(self.thread)
 
-            try:
-                latest_asset_price = (
-                    fetch_min_price(asset) if tx.type == "خرید" else fetch_max_price(asset)
-                )
-                tx.calculate_gains(latest_asset_price, latest_dollar_price, latest_gold_price, tx.type)
-            except Exception as e:
-                print(f"خطا در محاسبه سود برای {asset.symbol}: {e}")
+        # Connect signals
+        self.thread.started.connect(self.worker.run)
+        self.worker.progress.connect(self.view.progress_bar.setValue)
+        self.worker.finished.connect(self.on_gain_calculation_done)
+
+        # Cleanup
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+
+        self.thread.start()
+
+    def on_gain_calculation_done(self):
+        self.thread.quit()
+        self.view.refresh_btn.click()  # Refresh table
+        PopUp.show_message("محاسبه سودها به پایان رسید ✅")
 
     def sort_and_display(self, key, reverse):
         transactions = Transaction.get_all()
@@ -116,3 +122,41 @@ class InsightsController(QObject):
             return False
 
         return True
+
+class GainCalculatorWorker(QObject):
+    progress = pyqtSignal(int)  # Emits % completed
+    finished = pyqtSignal()     # Emits when done
+    error = pyqtSignal(str)     # Emits error message
+
+    def __init__(self, latest_gold_price, latest_dollar_price):
+        super().__init__()
+        self.latest_gold_price = latest_gold_price
+        self.latest_dollar_price = latest_dollar_price
+
+    def run(self):
+        transactions = Transaction.get_all()
+        total = len(transactions)
+        if total == 0:
+            self.progress.emit(100)
+            self.finished.emit()
+            return
+
+        for i, tx in enumerate(transactions, start=1):
+            asset = Asset.get_by_id(tx.asset_id)
+            if not asset:
+                continue
+
+            try:
+                latest_asset_price = (
+                    fetch_min_price(asset) if tx.type == "خرید" else fetch_max_price(asset)
+                )
+                tx.calculate_gains(latest_asset_price, self.latest_dollar_price, self.latest_gold_price, tx.type)
+            except Exception as e:
+                print(f"Gain calculation failed for {asset.symbol}: {e}")
+                self.error.emit(f"{asset.symbol}: {str(e)}")
+
+            percent = int(i / total * 100)
+            self.progress.emit(percent)
+
+        self.progress.emit(100)
+        self.finished.emit()

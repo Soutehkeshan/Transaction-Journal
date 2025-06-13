@@ -151,5 +151,16 @@ class BaseView(QWidget):
             border-bottom-right-radius: 4px;
         }
 
+        QProgressBar {
+            border: 1px solid #DADDE1;
+            border-radius: 8px;
+            height: 20px;
+            color: #333;
+        }
+
+        QProgressBar::chunk {
+            background-color: #4CAF50;  /* Green */
+            border-radius: 8px;         /* Fully rounded */
+        }
             """
     
