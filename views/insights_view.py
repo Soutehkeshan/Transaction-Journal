@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget,
-    QTableWidgetItem, QLabel, QLineEdit, QHeaderView, QFrame, QProgressBar
+    QTableWidgetItem, QLabel, QLineEdit, QHeaderView, QFrame, QProgressBar, QComboBox
 )
 from PyQt5.QtCore import Qt
 from typing import List, Any
@@ -71,6 +71,44 @@ class InsightsView(BaseView):
         separator_irr.setStyleSheet("color: #E0E0E0;")
         main_layout.addWidget(separator_irr)
 
+        # --- Search & Filter Section ---
+        filter_layout = QHBoxLayout()
+        filter_layout.setAlignment(Qt.AlignRight)
+
+        # Search bar
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("جستجو بر اساس نماد یا یادداشت...")
+
+        # Type filter
+        self.type_filter = QComboBox()
+        self.type_filter.addItem("همه")
+        self.type_filter.addItem("خرید")
+        self.type_filter.addItem("فروش")
+
+        # Date range filter (text inputs in Jalali YYYY-MM-DD)
+        self.start_date_input = QLineEdit()
+        self.start_date_input.setPlaceholderText("از تاریخ (مثال: 01-01-1404) توجه: اعداد باید به انگلیسی باشند")
+
+        self.end_date_input = QLineEdit()
+        self.end_date_input.setPlaceholderText("تا تاریخ (مثال: 01-01-1404) توجه: اعداد باید به انگلیسی باشند")
+
+        from PyQt5.QtWidgets import QGridLayout
+
+        filter_layout = QGridLayout()
+
+        filter_layout.addWidget(QLabel("نوع:"), 0, 0)
+        filter_layout.addWidget(self.type_filter, 0, 1)
+        filter_layout.addWidget(QLabel("از:"), 0, 2)
+        filter_layout.addWidget(self.start_date_input, 0, 3)
+
+        filter_layout.addWidget(QLabel("تا:"), 1, 2)
+        filter_layout.addWidget(self.end_date_input, 1, 3)
+        filter_layout.addWidget(QLabel("جستجو:"), 1, 0)
+        filter_layout.addWidget(self.search_input, 1, 1)
+
+        main_layout.addLayout(filter_layout)
+
+        
         # --- Transactions Table ---
         self.table = QTableWidget()
         self.table.setColumnCount(13)

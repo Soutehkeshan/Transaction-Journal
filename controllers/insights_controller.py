@@ -5,6 +5,7 @@ from models.transaction import Transaction
 from data_fetcher import fetch_gold_price, fetch_min_price, fetch_max_price
 from views.modify_transaction_dialog import ModifyTransactionDialog
 from views.PopUp import PopUp
+import jdatetime
 
 class InsightsController(QObject):
     def __init__(self, view):
@@ -15,6 +16,12 @@ class InsightsController(QObject):
         self.view.calculate_gains_btn.clicked.connect(self.calculate_gains)
         self.view.refresh_btn.clicked.connect(lambda: self.sort_and_display("timestamp", reverse=True))
         self.view.modify_btn.clicked.connect(self.modify_selected_transaction)
+
+        # Filter connections
+        self.view.search_input.textChanged.connect(self.apply_filters)
+        self.view.type_filter.currentIndexChanged.connect(self.apply_filters)
+        self.view.start_date_input.textChanged.connect(self.apply_filters)
+        self.view.end_date_input.textChanged.connect(self.apply_filters)
 
         self.sort_and_display("timestamp", reverse=True)
 
@@ -59,7 +66,55 @@ class InsightsController(QObject):
         transactions = Transaction.get_all()
         transactions = [tx for tx in transactions if hasattr(tx, key)]
         sorted_tx = sorted(transactions, key=lambda t: getattr(t, key), reverse=reverse)
-        self.view.update_table(sorted_tx)
+        self._all_transactions = sorted_tx  # save unfiltered version
+        self.apply_filters()
+
+    def apply_filters(self):
+        """Apply search text + type filter + date range filter."""
+        search_text = self.view.search_input.text().strip().lower()
+        selected_type = self.view.type_filter.currentText()
+        start_date_text = self.view.start_date_input.text().strip()
+        end_date_text = self.view.end_date_input.text().strip()
+
+        if not hasattr(self, "_all_transactions"):
+            return
+
+        # Convert to jdatetime if provided
+        start_date = None
+        end_date = None
+        try:
+            if start_date_text:
+                start_date = jdatetime.datetime.strptime(start_date_text, "%Y-%m-%d")
+            if end_date_text:
+                end_date = jdatetime.datetime.strptime(end_date_text, "%Y-%m-%d")
+        except ValueError:
+            # Ignore invalid inputs silently
+            pass
+
+        filtered = []
+        for tx in self._all_transactions:
+            asset = Asset.get_by_id(tx.asset_id)
+            symbol = asset.symbol if asset else ""
+            note = tx.note or ""
+
+            matches_search = (search_text in symbol.lower() or search_text in note.lower())
+            matches_type = (selected_type == "همه" or tx.type == selected_type)
+
+            # Parse transaction date (assuming it's stored as Jalali string "YYYY-MM-DD HH:MM:SS")
+            matches_date = True
+            try:
+                tx_date = jdatetime.datetime.strptime(str(tx.timestamp)[:10], "%Y-%m-%d")
+                if start_date and tx_date < start_date:
+                    matches_date = False
+                if end_date and tx_date > end_date:
+                    matches_date = False
+            except Exception:
+                pass
+
+            if matches_search and matches_type and matches_date:
+                filtered.append(tx)
+
+        self.view.update_table(filtered)
 
     def modify_selected_transaction(self):
         selected = self.view.table.selectedItems()
