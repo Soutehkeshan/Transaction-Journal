@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget,
-    QTableWidgetItem, QLabel, QLineEdit, QHeaderView, QFrame, QProgressBar, QComboBox
+    QTableWidgetItem, QLabel, QLineEdit, QHeaderView, QFrame, QProgressBar, QComboBox, QGridLayout
 )
 from PyQt5.QtCore import Qt
 from typing import List, Any
@@ -91,8 +91,6 @@ class InsightsView(BaseView):
 
         self.end_date_input = QLineEdit()
         self.end_date_input.setPlaceholderText("تا تاریخ (مثال: 01-01-1404) توجه: اعداد باید به انگلیسی باشند")
-
-        from PyQt5.QtWidgets import QGridLayout
 
         filter_layout = QGridLayout()
 
