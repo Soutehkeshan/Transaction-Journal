@@ -136,7 +136,6 @@ class ModifyTransactionDialog(QDialog):
         layout.addRow(QLabel("یادداشت:"), self.note_edit)
 
         buttons = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
-        buttons.accepted.disconnect()
         buttons.rejected.connect(self.reject)
 
         # Connect Save manually
