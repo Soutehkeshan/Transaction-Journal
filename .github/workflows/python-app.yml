@@ -8,8 +8,7 @@ on:
 
 jobs:
   build:
-    # Using Windows Server 2019 as it's more compatible with Windows 7 than the latest
-    runs-on: windows-2019
+    runs-on: windows-2022
 
     steps:
     - uses: actions/checkout@v3
