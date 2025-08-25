@@ -48,6 +48,18 @@ class TransactionEntryView(BaseView):
         self.equilibrium_price_input.setPlaceholderText("مثلاً: 2400")
         self.equilibrium_price_input.setAlignment(Qt.AlignRight)
 
+        self.equilibrium_price_date_input = QLineEdit()
+        now_jalali = jdatetime.datetime.now().date()
+        self.equilibrium_price_date_input.setText(now_jalali.strftime('%Y-%m-%d'))
+        self.equilibrium_price_date_input.setPlaceholderText("تاریخ شمسی (مثلاً: 1403-03-00)")
+        self.equilibrium_price_date_input.setAlignment(Qt.AlignRight)
+        self.equilibrium_price_date_input.setMinimumWidth(350) # Increased width
+
+        self.equilibrium_price_now_checkbox = QCheckBox("استفاده از زمان فعلی")
+        self.equilibrium_price_now_checkbox.setChecked(True)
+        self.equilibrium_price_now_checkbox.setLayoutDirection(Qt.RightToLeft)
+        self.equilibrium_price_date_input.setEnabled(False)
+
         self.note_input = QTextEdit()
         self.note_input.setPlaceholderText("توضیح اختیاری...")
         self.note_input.setAlignment(Qt.AlignRight)
@@ -105,6 +117,15 @@ class TransactionEntryView(BaseView):
         form_layout.addRow(QLabel("تعداد:"), self.amount_input)
         form_layout.addRow(QLabel("قیمت واحد:"), self.price_input)
         form_layout.addRow(QLabel("قیمت تعادلی:"), self.equilibrium_price_input)
+
+        # Date input and checkbox in a horizontal layout
+        date_hbox = QHBoxLayout()
+        date_hbox.addWidget(self.equilibrium_price_date_input)
+        date_hbox.addWidget(self.equilibrium_price_now_checkbox)
+        date_hbox.addStretch(1) # Pushes the checkbox and input to the right
+        date_hbox.setAlignment(Qt.AlignRight)
+        form_layout.addRow(QLabel("تاریخ:"), date_hbox)
+        
         form_layout.addRow(QLabel("یادداشت:"), self.note_input)
 
         # Date input and checkbox in a horizontal layout

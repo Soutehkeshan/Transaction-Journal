@@ -145,6 +145,7 @@ class InsightsController(QObject):
                 tx.amount = data["amount"]
                 tx.price_per_unit = data["price_per_unit"]
                 tx.equilibrium_price = data["equilibrium_price"]
+                tx.equilibrium_price_timestamp = data["equilibrium_price_date"]
                 tx.gold_price = data["gold_price"]
                 tx.dollar_price = data["dollar_price"]
                 tx.timestamp = data["timestamp"]

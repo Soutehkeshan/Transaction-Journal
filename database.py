@@ -31,6 +31,7 @@ def init_db():
                    amount REAL,
                    price_per_unit REAL,
                    equilibrium_price REAL,
+                   equilibrium_price_date TEXT,
                    gold_price REAL,
                    dollar_price REAL,
                    timestamp TEXT,

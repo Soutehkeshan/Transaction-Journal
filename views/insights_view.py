@@ -109,11 +109,11 @@ class InsightsView(BaseView):
         
         # --- Transactions Table ---
         self.table = QTableWidget()
-        self.table.setColumnCount(13)
+        self.table.setColumnCount(15)
         
         # Set Persian Horizontal Header Labels
         self.table.setHorizontalHeaderLabels([
-            "نماد", "نوع", "تعداد", "قیمت واحد", "قیمت تعادلی", "جمع کل",
+            "نماد", "نوع", "تعداد", "قیمت واحد", "قیمت تعادلی", "تاریخ قیمت تعادلی", "جمع کل",
             "قیمت طلا", "قیمت دلار", "یادداشت",
             "آخرین قیمت دارایی", "سود ریالی",
             "سود دلاری", "سود طلایی", "تاریخ و زمان"
@@ -133,15 +133,16 @@ class InsightsView(BaseView):
             2: 80,    # تعداد
             3: 100,   # قیمت واحد
             4: 100,   # قیمت تعادلی
-            5: 100,   # جمع کل
-            6: 90,    # قیمت طلا
-            7: 90,    # قیمت دلار
-            8: 180,   # یادداشت
-            9: 100,   # آخرین قیمت دارایی
-            10: 80,    # سود ریالی
-            11: 80,    # سود دلاری
-            12: 80,   # سود طلایی
-            13: 160   # تاریخ و زمان (give more space here)
+            5: 100,   # تاریخ قیمت تعادلی
+            6: 100,   # جمع کل
+            7: 90,    # قیمت طلا
+            8: 90,    # قیمت دلار
+            9: 180,   # یادداشت
+            10: 100,   # آخرین قیمت دارایی
+            11: 56,    # سود ریالی
+            12: 56,    # سود دلاری
+            13: 56,    # سود طلایی
+            14: 110   # تاریخ و زمان
         }
         for col, width in column_widths.items():
             self.table.setColumnWidth(col, width)
@@ -183,15 +184,16 @@ class InsightsView(BaseView):
             self.table.setItem(row, 2, QTableWidgetItem(f"{tx.amount:.5f}"))
             self.table.setItem(row, 3, QTableWidgetItem(f"{tx.price_per_unit:.2f}"))
             self.table.setItem(row, 4, QTableWidgetItem(f"{tx.equilibrium_price:.2f}"))
-            self.table.setItem(row, 5, QTableWidgetItem(f"{total_value:.2f}"))
-            self.table.setItem(row, 6, QTableWidgetItem(f"{tx.gold_price:.2f}"))
-            self.table.setItem(row, 7, QTableWidgetItem(f"{tx.dollar_price:.2f}"))
-            self.table.setItem(row, 8, QTableWidgetItem(tx.note))
-            self.table.setItem(row, 9, QTableWidgetItem(f"{latest_asset_price:.2f}"))
-            self.table.setItem(row, 10, QTableWidgetItem(f"{irr_gain:.2f}"))
-            self.table.setItem(row, 11, QTableWidgetItem(f"{usd_gain:.2f}"))
-            self.table.setItem(row, 12, QTableWidgetItem(f"{gold_gain:.2f}"))
-            self.table.setItem(row, 13, QTableWidgetItem(str(tx.timestamp)))
+            self.table.setItem(row, 5, QTableWidgetItem(str(tx.equilibrium_price_date)))
+            self.table.setItem(row, 6, QTableWidgetItem(f"{total_value:.2f}"))
+            self.table.setItem(row, 7, QTableWidgetItem(f"{tx.gold_price:.2f}"))
+            self.table.setItem(row, 8, QTableWidgetItem(f"{tx.dollar_price:.2f}"))
+            self.table.setItem(row, 9, QTableWidgetItem(tx.note))
+            self.table.setItem(row, 10, QTableWidgetItem(f"{latest_asset_price:.2f}"))
+            self.table.setItem(row, 11, QTableWidgetItem(f"{irr_gain:.2f}"))
+            self.table.setItem(row, 12, QTableWidgetItem(f"{usd_gain:.2f}"))
+            self.table.setItem(row, 13, QTableWidgetItem(f"{gold_gain:.2f}"))
+            self.table.setItem(row, 14, QTableWidgetItem(str(tx.timestamp)))
 
             # Align content of each cell to the right
             for col in range(self.table.columnCount()):

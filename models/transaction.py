@@ -2,7 +2,7 @@ from database.db_utils import get_db_connection
 from models.gain import Gain
 
 class Transaction:
-    def __init__(self, asset_id, type, amount, price_per_unit, equilibrium_price,
+    def __init__(self, asset_id, type, amount, price_per_unit, equilibrium_price, equilibrium_price_date,
                  gold_price, dollar_price, timestamp, note="", id=None):
         self.id = id
         self.asset_id = asset_id
@@ -10,6 +10,7 @@ class Transaction:
         self.amount = amount
         self.price_per_unit = price_per_unit
         self.equilibrium_price = equilibrium_price
+        self.equilibrium_price_date = equilibrium_price_date
         self.total = self.amount * self.price_per_unit
         self.gold_price = gold_price
         self.dollar_price = dollar_price
@@ -21,22 +22,22 @@ class Transaction:
         cursor = conn.cursor()
         if self.id is None:
             cursor.execute("""
-                INSERT INTO transactions (asset_id, type, amount, price_per_unit, equilibrium_price,
+                INSERT INTO transactions (asset_id, type, amount, price_per_unit, equilibrium_price, equilibrium_price_date,
                 gold_price, dollar_price, timestamp, note)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
-                self.asset_id, self.type, self.amount, self.price_per_unit, self.equilibrium_price,
+                self.asset_id, self.type, self.amount, self.price_per_unit, self.equilibrium_price, self.equilibrium_price_date,
                 self.gold_price, self.dollar_price, self.timestamp, self.note
             ))
             self.id = cursor.lastrowid
         else:
             cursor.execute("""
                 UPDATE transactions
-                SET asset_id = ?, type = ?, amount = ?, price_per_unit = ?, equilibrium_price = ?,
+                SET asset_id = ?, type = ?, amount = ?, price_per_unit = ?, equilibrium_price = ?, equilibrium_price_date = ?,
                     gold_price = ?, dollar_price = ?, timestamp = ?, note = ?
                 WHERE id = ?
             """, (
-                self.asset_id, self.type, self.amount, self.price_per_unit, self.equilibrium_price,
+                self.asset_id, self.type, self.amount, self.price_per_unit, self.equilibrium_price, self.equilibrium_price_date,
                 self.gold_price, self.dollar_price, self.timestamp, self.note, self.id
             ))
         conn.commit()
@@ -122,10 +123,11 @@ class Transaction:
             amount=row[3],
             price_per_unit=row[4],
             equilibrium_price=row[5],
-            gold_price=row[6],
-            dollar_price=row[7],
-            timestamp=row[8],
-            note=row[9],
+            equilibrium_price_date=row[6],
+            gold_price=row[7],
+            dollar_price=row[8],
+            timestamp=row[9],
+            note=row[10],
         )
 
     def __repr__(self):

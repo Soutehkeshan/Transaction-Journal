@@ -122,6 +122,7 @@ class ModifyTransactionDialog(QDialog):
         self.amount_edit = QLineEdit(str(tx.amount))
         self.price_edit = QLineEdit(str(tx.price_per_unit))
         self.equilibrium_price_edit = QLineEdit(str(tx.equilibrium_price))
+        self.equilibrium_price_date_edit = QLineEdit(str(tx.equilibrium_price_date))
         self.gold_price_edit = QLineEdit(str(tx.gold_price))
         self.dollar_price_edit = QLineEdit(str(tx.dollar_price))
         self.timestamp_edit = QLineEdit(str(tx.timestamp))
@@ -132,6 +133,7 @@ class ModifyTransactionDialog(QDialog):
         layout.addRow(QLabel("تعداد:"), self.amount_edit)
         layout.addRow(QLabel("قیمت واحد:"), self.price_edit)
         layout.addRow(QLabel("قیمت تعادلی:"), self.equilibrium_price_edit)
+        layout.addRow(QLabel("تاریخ قیمت تعادلی:"), self.equilibrium_price_date_edit)
         layout.addRow(QLabel("قیمت طلا:"), self.gold_price_edit)
         layout.addRow(QLabel("قیمت دلار:"), self.dollar_price_edit)
         layout.addRow(QLabel("تاریخ و زمان:"), self.timestamp_edit)
@@ -172,6 +174,10 @@ class ModifyTransactionDialog(QDialog):
                 equilibrium_price = float(self.equilibrium_price_edit.text())
             except Exception:
                 raise ValueError("قیمت تعادلی وارد شده معتبر نیست. لطفاً یک عدد وارد کنید.")
+            
+            equilibrium_price_date = self.equilibrium_price_date_edit.text().strip()
+            if not equilibrium_price_date:
+                raise ValueError("تاریخ قیمت تعادلی نمی‌تواند خالی باشد.")
 
             try:
                 gold_price = float(self.gold_price_edit.text())
@@ -195,6 +201,7 @@ class ModifyTransactionDialog(QDialog):
                 "amount": amount,
                 "price_per_unit": price,
                 "equilibrium_price": equilibrium_price,
+                "equilibrium_price_date": equilibrium_price_date,
                 "gold_price": gold_price,
                 "dollar_price": dollar_price,
                 "timestamp": timestamp,

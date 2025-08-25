@@ -1,3 +1,4 @@
+from operator import eq
 import jdatetime
 from data_fetcher import fetch_gold_price
 from models.transaction import Transaction
@@ -41,15 +42,26 @@ class TransactionEntryController:
         except Exception as e:
             PopUp.show_error("مقدار وارد شده برای قیمت تعادلی معتبر نیست. لطفاً یک عدد وارد کنید.")
             return
+        
+        # --- Date handling ---
+        if self.view.equilibrium_price_now_checkbox.isChecked():
+            equilibrium_price_date = jdatetime.datetime.now().strftime('%Y-%m-%d')
+        else:
+            try:
+                equilibrium_price_date_qt = self.view.equilibrium_price_date_input.toPyDate()
+            except Exception as e:
+                PopUp.show_error("تاریخ وارد شده برای قیمت تعادلی معتبر نیست. لطفاً یک تاریخ صحیح وارد کنید.")
+                return
+            equilibrium_price_date = equilibrium_price_date_qt.toPyDate()
 
         # --- Date handling ---
         if self.view.now_checkbox.isChecked():
             timestamp = jdatetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         else:
             try:
-                timestamp_qt = self.view.date_input.DateTime()
+                timestamp_qt = self.view.date_input.toPyDateTime()
             except Exception as e:
-                PopUp.show_error("تاریخ وارد شده معتبر نیست. لطفاً یک تاریخ صحیح وارد کنید.")
+                PopUp.show_error("تاریخ وارد شده برای تراکنش معتبر نیست. لطفاً یک تاریخ صحیح وارد کنید.")
                 return
             timestamp = timestamp_qt.toPyDateTime()
 
@@ -71,7 +83,7 @@ class TransactionEntryController:
 
         note = self.view.note_input.toPlainText().strip()
 
-        transaction = Transaction(asset_id, tx_type, amount, price, equilibrium_price, gold_price, dollar_price, timestamp, note)
+        transaction = Transaction(asset_id, tx_type, amount, price, equilibrium_price, equilibrium_price_date, gold_price, dollar_price, timestamp, note)
         transaction.save()
         PopUp.show_message("تراکنش با موفقیت ثبت شد! ✅")
 
