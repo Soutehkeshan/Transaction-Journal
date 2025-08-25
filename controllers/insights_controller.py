@@ -22,6 +22,8 @@ class InsightsController(QObject):
         self.view.type_filter.currentIndexChanged.connect(self.apply_filters)
         self.view.start_date_input.textChanged.connect(self.apply_filters)
         self.view.end_date_input.textChanged.connect(self.apply_filters)
+        self.view.start_equilibrium_date_input.textChanged.connect(self.apply_filters)
+        self.view.end_equilibrium_date_input.textChanged.connect(self.apply_filters)
 
         self.sort_and_display("timestamp", reverse=True)
 
@@ -75,6 +77,8 @@ class InsightsController(QObject):
         selected_type = self.view.type_filter.currentText()
         start_date_text = self.view.start_date_input.text().strip()
         end_date_text = self.view.end_date_input.text().strip()
+        start_equilibrium_date_text = self.view.start_equilibrium_date_input.text().strip()
+        end_equilibrium_date_text = self.view.end_equilibrium_date_input.text().strip()
 
         if not hasattr(self, "_all_transactions"):
             return
@@ -87,6 +91,18 @@ class InsightsController(QObject):
                 start_date = jdatetime.datetime.strptime(start_date_text, "%Y-%m-%d")
             if end_date_text:
                 end_date = jdatetime.datetime.strptime(end_date_text, "%Y-%m-%d")
+        except ValueError:
+            # Ignore invalid inputs silently
+            pass
+
+        # Convert to jdatetime if provided
+        start_equilibrium_date = None
+        end_equilibrium_date = None
+        try:
+            if start_equilibrium_date_text:
+                start_equilibrium_date = jdatetime.datetime.strptime(start_equilibrium_date_text, "%Y-%m-%d")
+            if end_equilibrium_date_text:
+                end_equilibrium_date = jdatetime.datetime.strptime(end_equilibrium_date_text, "%Y-%m-%d")
         except ValueError:
             # Ignore invalid inputs silently
             pass
@@ -111,7 +127,18 @@ class InsightsController(QObject):
             except Exception:
                 pass
 
-            if matches_search and matches_type and matches_date:
+            # Parse transaction equilibrium date (assuming it's stored as Jalali string "YYYY-MM-DD HH:MM:SS")
+            matches_equilibrium_date = True
+            try:
+                tx_equilibrium_date = jdatetime.datetime.strptime(str(tx.equilibrium_price_date)[:10], "%Y-%m-%d")
+                if start_equilibrium_date and tx_equilibrium_date < start_equilibrium_date:
+                    matches_equilibrium_date = False
+                if end_equilibrium_date and tx_equilibrium_date > end_equilibrium_date:
+                    matches_equilibrium_date = False
+            except Exception:
+                pass
+
+            if matches_search and matches_type and matches_date and matches_equilibrium_date:
                 filtered.append(tx)
 
         self.view.update_table(filtered)

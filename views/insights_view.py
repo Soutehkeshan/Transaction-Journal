@@ -92,17 +92,28 @@ class InsightsView(BaseView):
         self.end_date_input = QLineEdit()
         self.end_date_input.setPlaceholderText("تا تاریخ (مثال: 01-01-1404) توجه: اعداد باید به انگلیسی باشند")
 
+        self.start_equilibrium_date_input = QLineEdit()
+        self.start_equilibrium_date_input.setPlaceholderText("از تاریخ (مثال: 01-01-1404) توجه: اعداد باید به انگلیسی باشند")
+
+        self.end_equilibrium_date_input = QLineEdit()
+        self.end_equilibrium_date_input.setPlaceholderText("تا تاریخ (مثال: 01-01-1404) توجه: اعداد باید به انگلیسی باشند")
+
         filter_layout = QGridLayout()
 
         filter_layout.addWidget(QLabel("نوع:"), 0, 0)
         filter_layout.addWidget(self.type_filter, 0, 1)
-        filter_layout.addWidget(QLabel("از:"), 0, 2)
-        filter_layout.addWidget(self.start_date_input, 0, 3)
+        filter_layout.addWidget(QLabel("جستجو:"), 0, 2)
+        filter_layout.addWidget(self.search_input, 0, 3)
 
+        filter_layout.addWidget(QLabel("از:"), 1, 0)
+        filter_layout.addWidget(self.start_date_input, 1, 1)
         filter_layout.addWidget(QLabel("تا:"), 1, 2)
         filter_layout.addWidget(self.end_date_input, 1, 3)
-        filter_layout.addWidget(QLabel("جستجو:"), 1, 0)
-        filter_layout.addWidget(self.search_input, 1, 1)
+
+        filter_layout.addWidget(QLabel("از (تعادلی):"), 2, 0)
+        filter_layout.addWidget(self.start_equilibrium_date_input, 2, 1)
+        filter_layout.addWidget(QLabel("تا (تعادلی):"), 2, 2)
+        filter_layout.addWidget(self.end_equilibrium_date_input, 2, 3)
 
         main_layout.addLayout(filter_layout)
 
