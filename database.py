@@ -30,6 +30,7 @@ def init_db():
                    type TEXT CHECK(type IN ('خرید', 'فروش')),
                    amount REAL,
                    price_per_unit REAL,
+                   equilibrium_price REAL,
                    gold_price REAL,
                    dollar_price REAL,
                    timestamp TEXT,

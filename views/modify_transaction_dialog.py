@@ -121,6 +121,7 @@ class ModifyTransactionDialog(QDialog):
         self.type_edit.setStyleSheet("QComboBox { text-align: right; }")
         self.amount_edit = QLineEdit(str(tx.amount))
         self.price_edit = QLineEdit(str(tx.price_per_unit))
+        self.equilibrium_price_edit = QLineEdit(str(tx.equilibrium_price))
         self.gold_price_edit = QLineEdit(str(tx.gold_price))
         self.dollar_price_edit = QLineEdit(str(tx.dollar_price))
         self.timestamp_edit = QLineEdit(str(tx.timestamp))
@@ -130,6 +131,7 @@ class ModifyTransactionDialog(QDialog):
         layout.addRow(QLabel("نوع:"), self.type_edit)
         layout.addRow(QLabel("تعداد:"), self.amount_edit)
         layout.addRow(QLabel("قیمت واحد:"), self.price_edit)
+        layout.addRow(QLabel("قیمت تعادلی:"), self.equilibrium_price_edit)
         layout.addRow(QLabel("قیمت طلا:"), self.gold_price_edit)
         layout.addRow(QLabel("قیمت دلار:"), self.dollar_price_edit)
         layout.addRow(QLabel("تاریخ و زمان:"), self.timestamp_edit)
@@ -167,6 +169,11 @@ class ModifyTransactionDialog(QDialog):
                 raise ValueError("قیمت واحد وارد شده معتبر نیست. لطفاً یک عدد وارد کنید.")
 
             try:
+                equilibrium_price = float(self.equilibrium_price_edit.text())
+            except Exception:
+                raise ValueError("قیمت تعادلی وارد شده معتبر نیست. لطفاً یک عدد وارد کنید.")
+
+            try:
                 gold_price = float(self.gold_price_edit.text())
             except Exception:
                 raise ValueError("قیمت طلا وارد شده معتبر نیست. لطفاً یک عدد وارد کنید.")
@@ -187,6 +194,7 @@ class ModifyTransactionDialog(QDialog):
                 "type": tx_type,
                 "amount": amount,
                 "price_per_unit": price,
+                "equilibrium_price": equilibrium_price,
                 "gold_price": gold_price,
                 "dollar_price": dollar_price,
                 "timestamp": timestamp,

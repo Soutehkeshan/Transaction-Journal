@@ -2,13 +2,14 @@ from database.db_utils import get_db_connection
 from models.gain import Gain
 
 class Transaction:
-    def __init__(self, asset_id, type, amount, price_per_unit,
+    def __init__(self, asset_id, type, amount, price_per_unit, equilibrium_price,
                  gold_price, dollar_price, timestamp, note="", id=None):
         self.id = id
         self.asset_id = asset_id
         self.type = type
         self.amount = amount
         self.price_per_unit = price_per_unit
+        self.equilibrium_price = equilibrium_price
         self.total = self.amount * self.price_per_unit
         self.gold_price = gold_price
         self.dollar_price = dollar_price
@@ -20,22 +21,22 @@ class Transaction:
         cursor = conn.cursor()
         if self.id is None:
             cursor.execute("""
-                INSERT INTO transactions (asset_id, type, amount, price_per_unit,
+                INSERT INTO transactions (asset_id, type, amount, price_per_unit, equilibrium_price,
                 gold_price, dollar_price, timestamp, note)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
-                self.asset_id, self.type, self.amount, self.price_per_unit,
+                self.asset_id, self.type, self.amount, self.price_per_unit, self.equilibrium_price,
                 self.gold_price, self.dollar_price, self.timestamp, self.note
             ))
             self.id = cursor.lastrowid
         else:
             cursor.execute("""
                 UPDATE transactions
-                SET asset_id = ?, type = ?, amount = ?, price_per_unit = ?,
+                SET asset_id = ?, type = ?, amount = ?, price_per_unit = ?, equilibrium_price = ?,
                     gold_price = ?, dollar_price = ?, timestamp = ?, note = ?
                 WHERE id = ?
             """, (
-                self.asset_id, self.type, self.amount, self.price_per_unit,
+                self.asset_id, self.type, self.amount, self.price_per_unit, self.equilibrium_price,
                 self.gold_price, self.dollar_price, self.timestamp, self.note, self.id
             ))
         conn.commit()
@@ -56,8 +57,8 @@ class Transaction:
             irr_gain = 0
         else:
             irr_gain = (
-                latest_price / self.price_per_unit if tx_type == "خرید"
-                else self.price_per_unit / latest_price
+                latest_price / self.equilibrium_price if tx_type == "خرید"
+                else self.equilibrium_price / latest_price
             )
 
         # Dollar-relative gain
@@ -120,10 +121,11 @@ class Transaction:
             type=row[2],
             amount=row[3],
             price_per_unit=row[4],
-            gold_price=row[5],
-            dollar_price=row[6],
-            timestamp=row[7],
-            note=row[8],
+            equilibrium_price=row[5],
+            gold_price=row[6],
+            dollar_price=row[7],
+            timestamp=row[8],
+            note=row[9],
         )
 
     def __repr__(self):

@@ -44,6 +44,10 @@ class TransactionEntryView(BaseView):
         self.price_input.setPlaceholderText("مثلاً: 2500")
         self.price_input.setAlignment(Qt.AlignRight)
 
+        self.equilibrium_price_input = QLineEdit()
+        self.equilibrium_price_input.setPlaceholderText("مثلاً: 2400")
+        self.equilibrium_price_input.setAlignment(Qt.AlignRight)
+
         self.note_input = QTextEdit()
         self.note_input.setPlaceholderText("توضیح اختیاری...")
         self.note_input.setAlignment(Qt.AlignRight)
@@ -100,6 +104,7 @@ class TransactionEntryView(BaseView):
         form_layout.addRow(QLabel("نوع تراکنش:"), self.type_input)
         form_layout.addRow(QLabel("تعداد:"), self.amount_input)
         form_layout.addRow(QLabel("قیمت واحد:"), self.price_input)
+        form_layout.addRow(QLabel("قیمت تعادلی:"), self.equilibrium_price_input)
         form_layout.addRow(QLabel("یادداشت:"), self.note_input)
 
         # Date input and checkbox in a horizontal layout

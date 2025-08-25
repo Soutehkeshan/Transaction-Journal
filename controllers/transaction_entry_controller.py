@@ -35,13 +35,19 @@ class TransactionEntryController:
         except Exception as e:
             PopUp.show_error("مقدار وارد شده برای قیمت دارایی معتبر نیست. لطفاً یک عدد وارد کنید.")
             return
+        
+        try:
+            equilibrium_price = float(self.view.equilibrium_price_input.text())
+        except Exception as e:
+            PopUp.show_error("مقدار وارد شده برای قیمت تعادلی معتبر نیست. لطفاً یک عدد وارد کنید.")
+            return
 
         # --- Date handling ---
         if self.view.now_checkbox.isChecked():
             timestamp = jdatetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         else:
             try:
-                timestamp_qt = self.view.date_input.dateTime()
+                timestamp_qt = self.view.date_input.DateTime()
             except Exception as e:
                 PopUp.show_error("تاریخ وارد شده معتبر نیست. لطفاً یک تاریخ صحیح وارد کنید.")
                 return
@@ -65,7 +71,7 @@ class TransactionEntryController:
 
         note = self.view.note_input.toPlainText().strip()
 
-        transaction = Transaction(asset_id, tx_type, amount, price, gold_price, dollar_price, timestamp, note)
+        transaction = Transaction(asset_id, tx_type, amount, price, equilibrium_price, gold_price, dollar_price, timestamp, note)
         transaction.save()
         PopUp.show_message("تراکنش با موفقیت ثبت شد! ✅")
 
