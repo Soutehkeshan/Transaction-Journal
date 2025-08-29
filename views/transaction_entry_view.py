@@ -182,6 +182,7 @@ class TransactionEntryView(BaseView):
         self.now_checkbox.stateChanged.connect(self.toggle_date_input)
         self.use_market_price_checkbox.stateChanged.connect(self.toggle_price_inputs)
         self.submit_button.clicked.connect(self.submitted.emit)
+        self.equilibrium_price_now_checkbox.stateChanged.connect(self.toggle_equilibrium_date_input)
 
     def toggle_date_input(self, state):
         self.date_input.setEnabled(not state)
@@ -190,7 +191,12 @@ class TransactionEntryView(BaseView):
 
     def toggle_price_inputs(self, state):
         self.gold_price_input.setEnabled(not state)
-        self.price_input.setEnabled(state) # Enable price_input when not using market price
+
+    def toggle_equilibrium_date_input(self, state):
+        self.equilibrium_price_date_input.setEnabled(not state)
+        if state:
+            self.equilibrium_price_date_input.setText(jdatetime.datetime.now().strftime('%Y-%m-%d'))
+
 
     def reset_form(self):
         self.symbol_input.clear()
