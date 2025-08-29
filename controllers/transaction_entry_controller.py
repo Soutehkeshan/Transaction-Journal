@@ -120,6 +120,8 @@ class TransactionEntryController:
         transaction.save()
         PopUp.show_message("تراکنش با موفقیت ثبت شد! ✅")
 
+        self.view.reset_form()
+
     def update_symbol_suggestions(self):
         try:
             symbols = Asset.get_all_symbols()

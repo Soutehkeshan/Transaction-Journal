@@ -191,3 +191,24 @@ class TransactionEntryView(BaseView):
     def toggle_price_inputs(self, state):
         self.gold_price_input.setEnabled(not state)
         self.price_input.setEnabled(state) # Enable price_input when not using market price
+
+    def reset_form(self):
+        self.symbol_input.clear()
+        self.amount_input.clear()
+        self.price_input.clear()
+        self.equilibrium_price_input.clear()
+        self.note_input.clear()
+        self.dollar_price_input.clear()
+        self.gold_price_input.clear()
+
+        # Reset checkboxes
+        self.now_checkbox.setChecked(True)
+        self.equilibrium_price_now_checkbox.setChecked(True)
+        self.use_market_price_checkbox.setChecked(True)
+
+        # Reset dates
+        self.date_input.setText(jdatetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        self.equilibrium_price_date_input.setText(jdatetime.datetime.now().strftime('%Y-%m-%d'))
+
+        # Reset dropdown
+        self.type_input.setCurrentIndex(0)
