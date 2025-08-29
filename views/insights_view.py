@@ -87,16 +87,16 @@ class InsightsView(BaseView):
 
         # Date range filter (text inputs in Jalali YYYY-MM-DD)
         self.start_date_input = QLineEdit()
-        self.start_date_input.setPlaceholderText("از تاریخ (مثال: 01-01-1404) توجه: اعداد باید به انگلیسی باشند")
+        self.start_date_input.setPlaceholderText("از تاریخ (مثال: 01-01-1404)")
 
         self.end_date_input = QLineEdit()
-        self.end_date_input.setPlaceholderText("تا تاریخ (مثال: 01-01-1404) توجه: اعداد باید به انگلیسی باشند")
+        self.end_date_input.setPlaceholderText("تا تاریخ (مثال: 01-01-1404)")
 
         self.start_equilibrium_date_input = QLineEdit()
-        self.start_equilibrium_date_input.setPlaceholderText("از تاریخ (مثال: 01-01-1404) توجه: اعداد باید به انگلیسی باشند")
+        self.start_equilibrium_date_input.setPlaceholderText("از تاریخ (مثال: 01-01-1404)")
 
         self.end_equilibrium_date_input = QLineEdit()
-        self.end_equilibrium_date_input.setPlaceholderText("تا تاریخ (مثال: 01-01-1404) توجه: اعداد باید به انگلیسی باشند")
+        self.end_equilibrium_date_input.setPlaceholderText("تا تاریخ (مثال: 01-01-1404)")
 
         filter_layout = QGridLayout()
 
