@@ -211,9 +211,12 @@ class InsightsController(QObject):
         """Validate input fields before calculating gains"""
         dollar_price = self.parse_number(self.view.irr_input.text(), "قیمت دلار")
         if dollar_price is None:
+            PopUp.show_error(
+                message="قیمت دلار را وارد کنید."
+            )
             return False
 
-        if dollar_price < 200000:
+        if dollar_price < 900000:
             PopUp.show_error(
                 message="قیمت دلار بسیار کم است. آیا مطمئن هستید که واحد را به ریال وارد کرده‌اید؟"
             )
