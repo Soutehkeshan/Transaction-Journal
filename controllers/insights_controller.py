@@ -5,6 +5,7 @@ from models.transaction import Transaction
 from data_fetcher import fetch_gold_price, fetch_min_price, fetch_max_price
 from views.modify_transaction_dialog import ModifyTransactionDialog
 from views.PopUp import PopUp
+from utility.persian_number_handler import PersianNumberHandler
 import jdatetime
 
 class InsightsController(QObject):
@@ -27,6 +28,51 @@ class InsightsController(QObject):
 
         self.sort_and_display("timestamp", reverse=True)
 
+    # --- Utility Parsers ---
+    def parse_number(self, text, field_name):
+        """Parse Persian/English number and return float (always English)."""
+        try:
+            text = text.strip()
+            if not text:
+                return None
+            language = PersianNumberHandler.detect_number_language(text)
+            if language == "persian":
+                return float(PersianNumberHandler.fa_to_en(text))
+            elif language == "english":
+                return float(text)
+            else:
+                PopUp.show_error(f"مقدار وارد شده برای {field_name} معتبر نیست. لطفاً یک عدد وارد کنید.")
+                return None
+        except Exception:
+            PopUp.show_error(f"مقدار وارد شده برای {field_name} معتبر نیست. لطفاً یک عدد وارد کنید.")
+            return None
+
+    def parse_date(self, text, fmt, field_name, silent=False):
+        """
+        Parse Persian/English date. 
+        Returns jdatetime.datetime if valid, None if empty/invalid.
+        If silent=True, no popup is shown.
+        """
+        try:
+            text = text.strip()
+            if not text:
+                return None
+
+            language = PersianNumberHandler.detect_number_language(text)
+            if language == "persian":
+                text = PersianNumberHandler.fa_to_en(text)
+            elif language != "english":
+                if not silent:
+                    PopUp.show_error(f"تاریخ وارد شده برای {field_name} معتبر نیست. لطفاً یک تاریخ صحیح وارد کنید.")
+                return None
+
+            return jdatetime.datetime.strptime(text, fmt)
+        except Exception:
+            if not silent:
+                PopUp.show_error(f"تاریخ وارد شده برای {field_name} معتبر نیست. لطفاً یک تاریخ صحیح وارد کنید.")
+            return None
+
+    # --- Main Methods ---
     def calculate_gains(self):
         if not self.validate_inputs():
             return
@@ -38,10 +84,8 @@ class InsightsController(QObject):
             PopUp.show_error("خطا در دریافت قیمت طلا. لطفاً دوباره تلاش کنید.")
             return
 
-        try:
-            latest_dollar_price = float(self.view.irr_input.text().replace(',', ''))
-        except ValueError:
-            PopUp.show_error("قیمت دلار وارد شده معتبر نیست.")
+        latest_dollar_price = self.parse_number(self.view.irr_input.text(), "قیمت دلار")
+        if latest_dollar_price is None:
             return
 
         self.thread = QThread()
@@ -75,37 +119,16 @@ class InsightsController(QObject):
         """Apply search text + type filter + date range filter."""
         search_text = self.view.search_input.text().strip().lower()
         selected_type = self.view.type_filter.currentText()
-        start_date_text = self.view.start_date_input.text().strip()
-        end_date_text = self.view.end_date_input.text().strip()
-        start_equilibrium_date_text = self.view.start_equilibrium_date_input.text().strip()
-        end_equilibrium_date_text = self.view.end_equilibrium_date_input.text().strip()
+
+        # Convert inputs
+        start_date = self.parse_date(self.view.start_date_input.text(), "%Y-%m-%d", "تاریخ شروع", silent=True)
+        end_date = self.parse_date(self.view.end_date_input.text(), "%Y-%m-%d", "تاریخ پایان", silent=True)
+        start_equilibrium_date = self.parse_date(self.view.start_equilibrium_date_input.text(), "%Y-%m-%d", "تاریخ شروع تعادلی", silent=True)
+        end_equilibrium_date = self.parse_date(self.view.end_equilibrium_date_input.text(), "%Y-%m-%d", "تاریخ پایان تعادلی", silent=True)
+
 
         if not hasattr(self, "_all_transactions"):
             return
-
-        # Convert to jdatetime if provided
-        start_date = None
-        end_date = None
-        try:
-            if start_date_text:
-                start_date = jdatetime.datetime.strptime(start_date_text, "%Y-%m-%d")
-            if end_date_text:
-                end_date = jdatetime.datetime.strptime(end_date_text, "%Y-%m-%d")
-        except ValueError:
-            # Ignore invalid inputs silently
-            pass
-
-        # Convert to jdatetime if provided
-        start_equilibrium_date = None
-        end_equilibrium_date = None
-        try:
-            if start_equilibrium_date_text:
-                start_equilibrium_date = jdatetime.datetime.strptime(start_equilibrium_date_text, "%Y-%m-%d")
-            if end_equilibrium_date_text:
-                end_equilibrium_date = jdatetime.datetime.strptime(end_equilibrium_date_text, "%Y-%m-%d")
-        except ValueError:
-            # Ignore invalid inputs silently
-            pass
 
         filtered = []
         for tx in self._all_transactions:
@@ -116,7 +139,7 @@ class InsightsController(QObject):
             matches_search = (search_text in symbol.lower() or search_text in note.lower())
             matches_type = (selected_type == "همه" or tx.type == selected_type)
 
-            # Parse transaction date (assuming it's stored as Jalali string "YYYY-MM-DD HH:MM:SS")
+            # Transaction date
             matches_date = True
             try:
                 tx_date = jdatetime.datetime.strptime(str(tx.timestamp)[:10], "%Y-%m-%d")
@@ -127,7 +150,7 @@ class InsightsController(QObject):
             except Exception:
                 pass
 
-            # Parse transaction equilibrium date (assuming it's stored as Jalali string "YYYY-MM-DD HH:MM:SS")
+            # Equilibrium date
             matches_equilibrium_date = True
             try:
                 tx_equilibrium_date = jdatetime.datetime.strptime(str(tx.equilibrium_price_date)[:10], "%Y-%m-%d")
@@ -161,7 +184,7 @@ class InsightsController(QObject):
             if data is None:
                 return  # Invalid input; error already shown by dialog
             try:
-                symbol = data["symbol"]
+                symbol = data["symbol"].strip().upper()
                 asset = Asset.get_by_symbol(symbol)
                 if not asset:
                     asset = Asset(symbol=symbol)
@@ -169,43 +192,35 @@ class InsightsController(QObject):
                 tx.asset_id = asset.id
 
                 tx.type = data["type"]
-                tx.amount = data["amount"]
-                tx.price_per_unit = data["price_per_unit"]
-                tx.equilibrium_price = data["equilibrium_price"]
-                tx.equilibrium_price_timestamp = data["equilibrium_price_date"]
-                tx.gold_price = data["gold_price"]
-                tx.dollar_price = data["dollar_price"]
-                tx.timestamp = data["timestamp"]
+                tx.amount = float(PersianNumberHandler.fa_to_en(str(data["amount"])))
+                tx.price_per_unit = float(PersianNumberHandler.fa_to_en(str(data["price_per_unit"])))
+                tx.equilibrium_price = float(PersianNumberHandler.fa_to_en(str(data["equilibrium_price"])))
+                tx.equilibrium_price_timestamp = PersianNumberHandler.fa_to_en(str(data["equilibrium_price_date"]))
+                tx.gold_price = float(PersianNumberHandler.fa_to_en(str(data["gold_price"])))
+                tx.dollar_price = float(PersianNumberHandler.fa_to_en(str(data["dollar_price"])))
+                tx.timestamp = PersianNumberHandler.fa_to_en(str(data["timestamp"]))
                 tx.note = data["note"]
                 tx.save()
+
                 self.view.update_table(self.view._transactions)
                 PopUp.show_message("تراکنش با موفقیت ویرایش شد ✅")
-            except Exception as e:
+            except Exception:
                 PopUp.show_error("ویرایش تراکنش با خطا مواجه شد. لطفاً دوباره تلاش کنید.")
 
     def validate_inputs(self):
         """Validate input fields before calculating gains"""
-        dollar_price_text = self.view.irr_input.text().replace(',', '')  # Remove commas
+        dollar_price = self.parse_number(self.view.irr_input.text(), "قیمت دلار")
+        if dollar_price is None:
+            return False
 
-        if not dollar_price_text:
-            PopUp.show_warning(
-                message="قیمت دلار وارد نشده است. مقدار آن صفر در نظر گرفته می‌شود."
+        if dollar_price < 200000:
+            PopUp.show_error(
+                message="قیمت دلار بسیار کم است. آیا مطمئن هستید که واحد را به ریال وارد کرده‌اید؟"
             )
-            self.view.irr_input.setText("0")
-            return True
-
-        try:
-            dollar_price = float(dollar_price_text)
-            if dollar_price < 200000:
-                PopUp.show_error(
-                    message="قیمت دلار بسیار کم است. آیا مطمئن هستید که واحد را به ریال وارد کرده‌اید؟"
-                )
-                return False
-        except ValueError:
-            PopUp.show_error("لطفاً یک عدد معتبر برای قیمت دلار وارد کنید.")
             return False
 
         return True
+
 
 class GainCalculatorWorker(QObject):
     progress = pyqtSignal(int)  # Emits % completed
