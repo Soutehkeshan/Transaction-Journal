@@ -1,6 +1,6 @@
 from PyQt5.QtCore import QObject, pyqtSignal, QThread
 from PyQt5.QtWidgets import QDialog
-from models.asset import Asset
+from models.ticker import Ticker
 from models.transaction import Transaction
 from data_fetcher import fetch_gold_price, fetch_min_price, fetch_max_price
 from views.modify_transaction_dialog import ModifyTransactionDialog
@@ -132,7 +132,7 @@ class InsightsController(QObject):
 
         filtered = []
         for tx in self._all_transactions:
-            asset = Asset.get_by_id(tx.asset_id)
+            asset = Ticker.get_by_id(tx.ticker_id)
             symbol = asset.symbol if asset else ""
             note = tx.note or ""
 
@@ -185,11 +185,11 @@ class InsightsController(QObject):
                 return  # Invalid input; error already shown by dialog
             try:
                 symbol = data["symbol"].strip().upper()
-                asset = Asset.get_by_symbol(symbol)
+                asset = Ticker.get_by_symbol(symbol)
                 if not asset:
-                    asset = Asset(symbol=symbol)
+                    asset = Ticker(symbol=symbol)
                     asset.save()
-                tx.asset_id = asset.id
+                tx.ticker_id = asset.id
 
                 tx.type = data["type"]
                 tx.amount = float(PersianNumberHandler.fa_to_en(str(data["amount"])))
@@ -244,7 +244,7 @@ class GainCalculatorWorker(QObject):
             return
 
         for i, tx in enumerate(transactions, start=1):
-            asset = Asset.get_by_id(tx.asset_id)
+            asset = Ticker.get_by_id(tx.ticker_id)
             if not asset:
                 continue
 

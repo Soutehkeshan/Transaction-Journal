@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 from typing import List, Any
-from models.asset import Asset
+from models.ticker import Ticker
 from models.gain import Gain
 
 from views.BaseView import BaseView
@@ -179,8 +179,8 @@ class InsightsView(BaseView):
         self.table.setRowCount(len(transactions))
         for row, tx in enumerate(transactions):
             total_value = tx.amount * tx.price_per_unit
-            # Ensure Asset.get_by_id is correctly implemented in your models
-            asset_symbol = Asset.get_by_id(tx.asset_id).symbol if hasattr(tx, 'asset_id') and Asset else "N/A"
+            # Ensure Ticker.get_by_id is correctly implemented in your models
+            asset_symbol = Ticker.get_by_id(tx.ticker_id).symbol if hasattr(tx, 'ticker_id') and Ticker else "N/A"
 
             # Retrieve associated gain using the Gain model
             gain = Gain.get_by_transaction_id(tx.id)

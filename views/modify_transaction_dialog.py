@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QDialog, QFormLayout, QLineEdit, QDialogButtonBox, QComboBox, QLabel, QCompleter
 from PyQt5.QtCore import Qt, QStringListModel
-from models.asset import Asset
+from models.ticker import Ticker
 from views.PopUp import PopUp
 
 class ModifyTransactionDialog(QDialog):
@@ -93,8 +93,6 @@ class ModifyTransactionDialog(QDialog):
         layout.setRowWrapPolicy(QFormLayout.DontWrapRows)
 
         # --- Asset name with autocomplete ---
-        self.assets = Asset.get_all_symbols()  # List of all assets
-
         self.asset_name_edit = QLineEdit()
         self.asset_name_edit.setMinimumWidth(170)
         self.asset_name_edit.setAlignment(Qt.AlignRight)
@@ -102,12 +100,12 @@ class ModifyTransactionDialog(QDialog):
 
         # Create and assign model and completer
         self.symbol_model = QStringListModel()
-        self.symbol_model.setStringList(Asset.get_all_symbols())
+        self.symbol_model.setStringList(Ticker.get_all_symbols())
         self.symbol_completer = QCompleter(self.symbol_model)
         self.symbol_completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.asset_name_edit.setCompleter(self.symbol_completer)
         # Set current asset name
-        current_asset = Asset.get_by_id(tx.asset_id) if tx.asset_id else None
+        current_asset = Ticker.get_by_id(tx.ticker_id) if tx.ticker_id else None
         if current_asset:
             self.asset_name_edit.setText(current_asset.symbol)
 

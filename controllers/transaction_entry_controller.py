@@ -2,7 +2,7 @@ from time import strptime
 import jdatetime
 from data_fetcher import fetch_gold_price
 from models.transaction import Transaction
-from models.asset import Asset
+from models.ticker import Ticker
 from views.PopUp import PopUp
 from utility.persian_number_handler import PersianNumberHandler
 
@@ -54,10 +54,11 @@ class TransactionEntryController:
     def handle_submit(self):
         # --- Symbol ---
         symbol = self.view.symbol_input.text().strip().upper()
-        existing_symbols = Asset.get_all_symbols()
+        existing_symbols = Ticker.get_all_symbols()
         if symbol not in existing_symbols:
-            Asset(symbol).save()
-        asset_id = Asset.get_by_symbol(symbol).id
+            PopUp.show_error(f"نماد '{symbol}' در سیستم موجود نیست. لطفاً ابتدا آن را اضافه کنید.")
+            return None
+        ticker_id = Ticker.get_by_symbol(symbol).id
 
         tx_type = self.view.type_input.currentText()
 
@@ -114,7 +115,7 @@ class TransactionEntryController:
 
         # --- Save Transaction ---
         transaction = Transaction(
-            asset_id, tx_type, amount, price, equilibrium_price,
+            ticker_id, tx_type, amount, price, equilibrium_price,
             equilibrium_price_date, gold_price, dollar_price, timestamp, note
         )
         transaction.save()
@@ -124,7 +125,7 @@ class TransactionEntryController:
 
     def update_symbol_suggestions(self):
         try:
-            symbols = Asset.get_all_symbols()
+            symbols = Ticker.get_all_symbols()
             self.view.symbol_model.setStringList(symbols)
         except Exception as e:
             print(f"Error loading symbols: {e}")
