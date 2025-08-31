@@ -250,7 +250,7 @@ class GainCalculatorWorker(QObject):
 
             try:
                 latest_asset_price = (
-                    fetch_min_price(asset) if tx.type == "خرید" else fetch_max_price(asset)
+                    fetch_max_price(asset) if tx.type == "خرید" else fetch_min_price(asset)
                 )
                 tx.calculate_gains(latest_asset_price, self.latest_dollar_price, self.latest_gold_price, tx.type)
             except Exception as e:
