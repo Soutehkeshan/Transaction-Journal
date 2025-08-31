@@ -53,34 +53,14 @@ class Transaction:
         conn.close()
         self.id = None
 
-    def calculate_gains(self, latest_price, latest_dollar_price, latest_gold_price, tx_type):
-        if not latest_price:
-            irr_gain = 0
-        else:
-            irr_gain = (
-                latest_price / self.equilibrium_price if tx_type == "خرید"
-                else self.equilibrium_price / latest_price
-            )
+    def calculate_gains(self, latest_price, latest_dollar_price, latest_gold_price):
+        irr_gain = latest_price / self.equilibrium_price if latest_price and self.equilibrium_price else 0
 
         # Dollar-relative gain
-        if latest_dollar_price and self.dollar_price:
-            dollar_gain = (
-                irr_gain * (self.dollar_price / latest_dollar_price)
-                if tx_type == "خرید"
-                else irr_gain * (latest_dollar_price / self.dollar_price)
-            )
-        else:
-            dollar_gain = 0
+        dollar_gain = irr_gain * (self.dollar_price / latest_dollar_price) if latest_dollar_price and self.dollar_price else 0
 
         # Gold-relative gain
-        if latest_gold_price and self.gold_price:
-            gold_gain = (
-                irr_gain * (self.gold_price / latest_gold_price)
-                if tx_type == "خرید"
-                else irr_gain * (latest_gold_price / self.gold_price)
-            )
-        else:
-            gold_gain = 0
+        gold_gain = irr_gain * (self.gold_price / latest_gold_price) if latest_gold_price and self.gold_price else 0
 
         # Save gains in the gains table using the Gain model
         existing_gain = Gain.get_by_transaction_id(self.id)
