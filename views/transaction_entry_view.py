@@ -36,6 +36,10 @@ class TransactionEntryView(BaseView):
         self.type_input.setLayoutDirection(Qt.RightToLeft)
         self.type_input.setStyleSheet("QComboBox { text-align: right; }") # Align text in combobox
 
+        self.portfolio_input = QLineEdit()
+        self.portfolio_input.setPlaceholderText("نام پرتفو")
+        self.portfolio_input.setAlignment(Qt.AlignRight)
+
         self.amount_input = QLineEdit()
         self.amount_input.setPlaceholderText("مثلاً: 100")
         self.amount_input.setAlignment(Qt.AlignRight)
@@ -107,49 +111,55 @@ class TransactionEntryView(BaseView):
         # Form layout for inputs
         form_layout = QFormLayout()
         form_layout.setLabelAlignment(Qt.AlignRight)
-        form_layout.setFormAlignment(Qt.AlignRight | Qt.AlignTop) # Align form to top for textedit
-        form_layout.setSpacing(12) # Increased spacing in form
+        form_layout.setFormAlignment(Qt.AlignRight | Qt.AlignTop)
+        form_layout.setSpacing(12)
         form_layout.setRowWrapPolicy(QFormLayout.DontWrapRows)
 
-        # Added QLabel wrappers for better styling consistency
-        form_layout.addRow(QLabel("نماد سهام:"), self.symbol_input)
-        form_layout.addRow(QLabel("نوع تراکنش:"), self.type_input)
-        form_layout.addRow(QLabel("تعداد:"), self.amount_input)
-        form_layout.addRow(QLabel("قیمت واحد:"), self.price_input)
-        form_layout.addRow(QLabel("قیمت تعادلی:"), self.equilibrium_price_input)
+        # Fix label width so all align
+        label_width = 100
 
-        # Date input and checkbox in a horizontal layout
-        date_hbox = QHBoxLayout()
-        date_hbox.addWidget(self.equilibrium_price_date_input)
-        date_hbox.addWidget(self.equilibrium_price_now_checkbox)
-        date_hbox.addStretch(1) # Pushes the checkbox and input to the right
-        date_hbox.setAlignment(Qt.AlignRight)
-        form_layout.addRow(QLabel("تاریخ:"), date_hbox)
-        
-        form_layout.addRow(QLabel("یادداشت:"), self.note_input)
+        def make_label(text):
+            lbl = QLabel(text)
+            lbl.setMinimumWidth(label_width)
+            lbl.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            return lbl
 
-        # Date input and checkbox in a horizontal layout
-        date_hbox = QHBoxLayout()
-        date_hbox.addWidget(self.date_input)
-        date_hbox.addWidget(self.now_checkbox)
-        date_hbox.addStretch(1) # Pushes the checkbox and input to the right
-        date_hbox.setAlignment(Qt.AlignRight)
-        form_layout.addRow(QLabel("تاریخ:"), date_hbox)
+        form_layout.addRow(make_label("نماد سهام:"), self.symbol_input)
+        form_layout.addRow(make_label("نام پرتفو:"), self.portfolio_input)
+        form_layout.addRow(make_label("نوع تراکنش:"), self.type_input)
+        form_layout.addRow(make_label("تعداد:"), self.amount_input)
+        form_layout.addRow(make_label("قیمت واحد:"), self.price_input)
+        form_layout.addRow(make_label("قیمت تعادلی:"), self.equilibrium_price_input)
 
-        # Gold price section in a horizontal layout
+        # Equilibrium date row
+        equil_date_hbox = QHBoxLayout()
+        equil_date_hbox.addWidget(self.equilibrium_price_date_input)
+        equil_date_hbox.addWidget(self.equilibrium_price_now_checkbox)
+        equil_date_hbox.addStretch(1)
+        form_layout.addRow(make_label("تاریخ تعادلی:"), equil_date_hbox)
+
+        # Note row
+        form_layout.addRow(make_label("یادداشت:"), self.note_input)
+
+        # Transaction date row
+        tx_date_hbox = QHBoxLayout()
+        tx_date_hbox.addWidget(self.date_input)
+        tx_date_hbox.addWidget(self.now_checkbox)
+        tx_date_hbox.addStretch(1)
+        form_layout.addRow(make_label("تاریخ تراکنش:"), tx_date_hbox)
+
+        # Gold price row
         gold_hbox = QHBoxLayout()
         gold_hbox.addWidget(self.gold_price_input)
         gold_hbox.addWidget(self.use_market_price_checkbox)
         gold_hbox.addStretch(1)
-        gold_hbox.setAlignment(Qt.AlignRight)
-        form_layout.addRow(QLabel("قیمت طلا:"), gold_hbox)
+        form_layout.addRow(make_label("قیمت طلا:"), gold_hbox)
 
-        # Dollar price section in a horizontal layout
+        # Dollar price row
         dollar_hbox = QHBoxLayout()
         dollar_hbox.addWidget(self.dollar_price_input)
         dollar_hbox.addStretch(1)
-        dollar_hbox.setAlignment(Qt.AlignRight)
-        form_layout.addRow(QLabel("قیمت دلار:"), dollar_hbox)
+        form_layout.addRow(make_label("قیمت دلار:"), dollar_hbox)
 
         # Add a separator line (optional, but good for visual separation)
         separator = QFrame()

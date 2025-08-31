@@ -200,6 +200,7 @@ class InsightsController(QObject):
                 tx.dollar_price = float(PersianNumberHandler.fa_to_en(str(data["dollar_price"])))
                 tx.timestamp = PersianNumberHandler.fa_to_en(str(data["timestamp"]))
                 tx.note = data["note"]
+                tx.portfolio = data["portfolio"]
                 tx.save()
 
                 self.view.update_table(self.view._transactions)

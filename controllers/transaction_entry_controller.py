@@ -113,10 +113,13 @@ class TransactionEntryController:
         # --- Note ---
         note = self.view.note_input.toPlainText().strip()
 
+        # --- Portfolio ---
+        portfolio = self.view.portfolio_input.text().strip()
+
         # --- Save Transaction ---
         transaction = Transaction(
             ticker_id, tx_type, amount, price, equilibrium_price,
-            equilibrium_price_date, gold_price, dollar_price, timestamp, note
+            equilibrium_price_date, gold_price, dollar_price, timestamp, note, portfolio
         )
         transaction.save()
         PopUp.show_message("تراکنش با موفقیت ثبت شد! ✅")

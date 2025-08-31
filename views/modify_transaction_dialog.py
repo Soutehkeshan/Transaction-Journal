@@ -125,6 +125,7 @@ class ModifyTransactionDialog(QDialog):
         self.dollar_price_edit = QLineEdit(str(tx.dollar_price))
         self.timestamp_edit = QLineEdit(str(tx.timestamp))
         self.note_edit = QLineEdit(tx.note)
+        self.portfolio_edit = QLineEdit(tx.portfolio)
 
         layout.addRow(QLabel("نام دارایی:"), self.asset_name_edit)
         layout.addRow(QLabel("نوع:"), self.type_edit)
@@ -136,6 +137,7 @@ class ModifyTransactionDialog(QDialog):
         layout.addRow(QLabel("قیمت دلار:"), self.dollar_price_edit)
         layout.addRow(QLabel("تاریخ و زمان:"), self.timestamp_edit)
         layout.addRow(QLabel("یادداشت:"), self.note_edit)
+        layout.addRow(QLabel("پرتفو:"), self.portfolio_edit)
 
         buttons = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
         buttons.rejected.connect(self.reject)
@@ -193,6 +195,10 @@ class ModifyTransactionDialog(QDialog):
 
             note = self.note_edit.text().strip()
 
+            portfolio = self.portfolio_edit.text().strip()
+            if not portfolio:
+                portfolio = ""
+
             return {
                 "symbol": symbol,
                 "type": tx_type,
@@ -203,7 +209,8 @@ class ModifyTransactionDialog(QDialog):
                 "gold_price": gold_price,
                 "dollar_price": dollar_price,
                 "timestamp": timestamp,
-                "note": note
+                "note": note,
+                "portfolio": portfolio
             }
 
         except ValueError as e:

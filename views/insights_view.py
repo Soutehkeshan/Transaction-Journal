@@ -120,15 +120,15 @@ class InsightsView(BaseView):
         
         # --- Transactions Table ---
         self.table = QTableWidget()
-        self.table.setColumnCount(15)
-        
-        # Set Persian Horizontal Header Labels
+        self.table.setColumnCount(16)
+
         self.table.setHorizontalHeaderLabels([
             "نماد", "نوع", "تعداد", "قیمت واحد", "قیمت تعادلی", "تاریخ قیمت تعادلی", "جمع کل",
-            "قیمت طلا", "قیمت دلار", "یادداشت",
-            "آخرین قیمت دارایی", "سود ریالی",
-            "سود دلاری", "سود طلایی", "تاریخ و زمان"
+            "قیمت طلا", "قیمت دلار",
+            "آخرین قیمت دارایی", "سود ریالی", "سود دلاری", "سود طلایی", "تاریخ و زمان", "پرتفو",
+            "یادداشت"
         ])
+
 
         # Adjust header behavior: Stretch last section, enable sorting click
         header = self.table.horizontalHeader()
@@ -148,13 +148,15 @@ class InsightsView(BaseView):
             6: 100,   # جمع کل
             7: 90,    # قیمت طلا
             8: 90,    # قیمت دلار
-            9: 180,   # یادداشت
-            10: 100,   # آخرین قیمت دارایی
-            11: 56,    # سود ریالی
-            12: 56,    # سود دلاری
-            13: 56,    # سود طلایی
-            14: 110   # تاریخ و زمان
+            9: 100,   # آخرین قیمت دارایی
+            10: 56,   # سود ریالی
+            11: 56,   # سود دلاری
+            12: 56,   # سود طلایی
+            13: 110,  # تاریخ و زمان
+            14: 60,   # پرتفوی
+            15: 220   # یادداشت 
         }
+
         for col, width in column_widths.items():
             self.table.setColumnWidth(col, width)
 
@@ -178,33 +180,40 @@ class InsightsView(BaseView):
         self._transactions = transactions  # Save for later access
         self.table.setRowCount(len(transactions))
         for row, tx in enumerate(transactions):
-            total_value = tx.amount * tx.price_per_unit
-            # Ensure Ticker.get_by_id is correctly implemented in your models
-            asset_symbol = Ticker.get_by_id(tx.ticker_id).symbol if hasattr(tx, 'ticker_id') and Ticker else "N/A"
+            # Defensive: handle None values for all numeric fields
+            def fmt(val, fmtstr):
+                try:
+                    return fmtstr.format(float(val)) if val is not None and val != "" else ""
+                except Exception:
+                    return str(val) if val is not None else ""
 
-            # Retrieve associated gain using the Gain model
+            total_value = tx.amount * tx.price_per_unit if tx.amount is not None and tx.price_per_unit is not None else ""
+
+            asset_symbol = Ticker.get_by_id(tx.ticker_id).symbol if hasattr(tx, 'ticker_id') and Ticker else "N/A"
             gain = Gain.get_by_transaction_id(tx.id)
 
-            latest_asset_price = gain.latest_asset_price if gain else 0.0
-            irr_gain = gain.irr_gain if gain else 0
-            usd_gain = gain.usd_gain if gain else 0
-            gold_gain = gain.gold_gain if gain else 0
+            latest_asset_price = gain.latest_asset_price if gain and gain.latest_asset_price is not None else ""
+            irr_gain = gain.irr_gain if gain and gain.irr_gain is not None else ""
+            usd_gain = gain.usd_gain if gain and gain.usd_gain is not None else ""
+            gold_gain = gain.gold_gain if gain and gain.gold_gain is not None else ""
 
             self.table.setItem(row, 0, QTableWidgetItem(asset_symbol))
             self.table.setItem(row, 1, QTableWidgetItem(tx.type))
-            self.table.setItem(row, 2, QTableWidgetItem(f"{tx.amount:.5f}"))
-            self.table.setItem(row, 3, QTableWidgetItem(f"{tx.price_per_unit:.2f}"))
-            self.table.setItem(row, 4, QTableWidgetItem(f"{tx.equilibrium_price:.2f}"))
-            self.table.setItem(row, 5, QTableWidgetItem(str(tx.equilibrium_price_date)))
-            self.table.setItem(row, 6, QTableWidgetItem(f"{total_value:.2f}"))
-            self.table.setItem(row, 7, QTableWidgetItem(f"{tx.gold_price:.2f}"))
-            self.table.setItem(row, 8, QTableWidgetItem(f"{tx.dollar_price:.2f}"))
-            self.table.setItem(row, 9, QTableWidgetItem(tx.note))
-            self.table.setItem(row, 10, QTableWidgetItem(f"{latest_asset_price:.2f}"))
-            self.table.setItem(row, 11, QTableWidgetItem(f"{irr_gain:.2f}"))
-            self.table.setItem(row, 12, QTableWidgetItem(f"{usd_gain:.2f}"))
-            self.table.setItem(row, 13, QTableWidgetItem(f"{gold_gain:.2f}"))
-            self.table.setItem(row, 14, QTableWidgetItem(str(tx.timestamp)))
+            self.table.setItem(row, 2, QTableWidgetItem(fmt(tx.amount, "{:.5f}")))
+            self.table.setItem(row, 3, QTableWidgetItem(fmt(tx.price_per_unit, "{:.2f}")))
+            self.table.setItem(row, 4, QTableWidgetItem(fmt(tx.equilibrium_price, "{:.2f}")))
+            self.table.setItem(row, 5, QTableWidgetItem(str(tx.equilibrium_price_date) if tx.equilibrium_price_date else ""))
+            self.table.setItem(row, 6, QTableWidgetItem(fmt(total_value, "{:.2f}") if total_value != "" else ""))
+            self.table.setItem(row, 7, QTableWidgetItem(fmt(tx.gold_price, "{:.2f}")))
+            self.table.setItem(row, 8, QTableWidgetItem(fmt(tx.dollar_price, "{:.2f}")))
+            self.table.setItem(row, 9, QTableWidgetItem(fmt(latest_asset_price, "{:.2f}")))
+            self.table.setItem(row, 10, QTableWidgetItem(fmt(irr_gain, "{:.2f}")))
+            self.table.setItem(row, 11, QTableWidgetItem(fmt(usd_gain, "{:.2f}")))
+            self.table.setItem(row, 12, QTableWidgetItem(fmt(gold_gain, "{:.2f}")))
+            self.table.setItem(row, 13, QTableWidgetItem(str(tx.timestamp) if tx.timestamp else ""))
+            self.table.setItem(row, 14, QTableWidgetItem(tx.portfolio if hasattr(tx, "portfolio") and tx.portfolio else ""))
+            self.table.setItem(row, 15, QTableWidgetItem(tx.note if tx.note else ""))
+
 
             # Align content of each cell to the right
             for col in range(self.table.columnCount()):

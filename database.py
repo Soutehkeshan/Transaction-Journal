@@ -34,6 +34,7 @@ def init_db():
                        dollar_price REAL,
                        timestamp TEXT,
                        note TEXT,
+                       portfolio TEXT,
                        FOREIGN KEY (ticker_id) REFERENCES tickers(id)
                    );
                    """)
