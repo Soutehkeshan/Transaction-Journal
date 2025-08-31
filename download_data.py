@@ -2,7 +2,7 @@ import os
 import gdown
 
 # === Google Drive shared link ===
-url = "https://drive.google.com/file/d/1Gr3DrFHnEKL0fZJ3E45pDxtJG03N9PJN/view?usp=sharing"
+url = "https://drive.google.com/file/d/1An3PyEQ0odVhG91RVr_FneP1oIiTtTs1/view?usp=sharing"
 
 # Extract file ID from the link
 file_id = url.split("/d/")[1].split("/")[0]
